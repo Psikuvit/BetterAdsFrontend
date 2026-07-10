@@ -1,6 +1,6 @@
 "use client";
 
-import { SubmitEvent, useState } from "react";
+import { useState } from "react";
 import {
   CardElement,
   Elements,
@@ -28,7 +28,7 @@ function CardPaymentForm({
   const [error, setError] = useState("");
   const [status, setStatus] = useState<"idle" | "processing" | "done">("idle");
 
-  async function handlePay(e: SubmitEvent<HTMLFormElement>) {
+  async function handlePay(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!stripe || !elements) return;
     const card = elements.getElement(CardElement);
@@ -58,7 +58,7 @@ function CardPaymentForm({
   if (status === "done") {
     return (
       <div className="flex flex-col gap-3">
-        <p className="text-sm text-neutral-700 dark:text-neutral-300">
+        <p className="text-sm text-muted-foreground">
           Payment submitted. Budget updates aren&apos;t pushed instantly — refresh to check.
         </p>
         <Button variant="secondary" onClick={onDone}>
@@ -70,7 +70,7 @@ function CardPaymentForm({
 
   return (
     <form onSubmit={handlePay} className="flex flex-col gap-4">
-      <div className="rounded-md border border-neutral-300 px-3 py-2.5 dark:border-neutral-700">
+      <div className="rounded-md border border-input bg-card px-3 py-2.5 transition-all duration-200 focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50">
         <CardElement
           options={{
             style: {
@@ -79,7 +79,7 @@ function CardPaymentForm({
           }}
         />
       </div>
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-xs text-destructive">{error}</p>}
       <Button type="submit" loading={status === "processing"} disabled={!stripe}>
         Pay ${amount}
       </Button>
@@ -100,7 +100,7 @@ export function FundCampaignPanel({
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function handleStart(e: SubmitEvent<HTMLFormElement>) {
+  async function handleStart(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
     setLoading(true);
@@ -120,7 +120,7 @@ export function FundCampaignPanel({
 
   if (!stripePromise) {
     return (
-      <p className="text-sm text-neutral-500">
+      <p className="text-sm text-muted-foreground">
         Stripe isn&apos;t configured for this app (missing publishable key).
       </p>
     );
@@ -151,7 +151,7 @@ export function FundCampaignPanel({
       <Button type="submit" loading={loading}>
         Continue
       </Button>
-      {error && <p className="text-sm text-red-600 sm:ml-2">{error}</p>}
+      {error && <p className="text-xs text-destructive sm:ml-2">{error}</p>}
     </form>
   );
 }

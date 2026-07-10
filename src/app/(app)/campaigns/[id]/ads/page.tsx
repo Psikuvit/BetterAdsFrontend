@@ -3,13 +3,23 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { motion } from "framer-motion";
 import { RequireAuth } from "@/components/RequireAuth";
-import { Card } from "@/components/ui/Card";
+import { GlassCard } from "@/components/ui/GlassCard";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { Spinner } from "@/components/ui/Spinner";
 import { errorMessage } from "@/lib/errors";
 import * as campaignsApi from "@/lib/api/campaigns";
 import { Ad, AdAnalyticsRow } from "@/lib/types";
+import {
+  ArrowLeft,
+  Upload,
+  Eye,
+  ChevronLeft,
+  ChevronRight,
+  Film,
+} from "lucide-react";
 
 function CampaignAdsContent() {
   const params = useParams<{ id: string }>();
@@ -56,88 +66,144 @@ function CampaignAdsContent() {
         <div>
           <Link
             href={`/campaigns/${campaignId}`}
-            className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100"
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
-            ← Back to campaign
+            <ArrowLeft className="size-4" />
+            Back to campaign
           </Link>
-          <h1 className="mt-1 text-xl font-semibold">Ads</h1>
+          <h1 className="mt-1 text-2xl font-semibold tracking-tight">Ads</h1>
         </div>
         <Link href={`/campaigns/${campaignId}/upload`}>
-          <Button>Upload ad</Button>
+          <Button size="sm">
+            <Upload className="size-4" />
+            Upload ad
+          </Button>
         </Link>
       </div>
 
       {loading ? (
-        <p className="text-sm text-neutral-500">Loading ads...</p>
+        <div className="flex min-h-[30vh] items-center justify-center gap-2 text-sm text-muted-foreground">
+          <Spinner />
+          Loading ads...
+        </div>
       ) : error ? (
-        <p className="text-sm text-red-600">{error}</p>
+        <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-4 text-sm text-destructive">
+          {error}
+        </div>
       ) : ads.length === 0 ? (
-        <Card>
-          <p className="text-sm text-neutral-500">No ads uploaded to this campaign yet.</p>
-        </Card>
+        <GlassCard className="flex flex-col items-center gap-4 py-12 text-center">
+          <Film className="size-10 text-muted-foreground/40" />
+          <p className="text-sm text-muted-foreground">No ads uploaded to this campaign yet.</p>
+          <Link href={`/campaigns/${campaignId}/upload`}>
+            <Button size="sm">
+              <Upload className="size-4" />
+              Upload your first ad
+            </Button>
+          </Link>
+        </GlassCard>
       ) : (
-        <Card className="p-0">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-neutral-200 text-left text-neutral-500 dark:border-neutral-800">
-                <th className="px-4 py-3 font-medium">Title</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Locale</th>
-                <th className="px-4 py-3 font-medium">Views</th>
-                <th className="px-4 py-3 font-medium">Created</th>
-                <th className="px-4 py-3 font-medium">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {ads.map((ad) => (
-                <tr
-                  key={ad.id}
-                  className="border-b border-neutral-100 last:border-0 hover:bg-neutral-50 dark:border-neutral-900 dark:hover:bg-neutral-900/50"
-                >
-                  <td className="px-4 py-3">
-                    <Link
-                      href={`/ads/${ad.id}?campaignId=${campaignId}`}
-                      className="font-medium hover:underline"
-                    >
-                      {ad.title}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3">
-                    <Badge status={ad.status} />
-                  </td>
-                  <td className="px-4 py-3 text-neutral-500">{ad.targetLocale}</td>
-                  <td className="px-4 py-3">{(viewsByAdId[ad.id] ?? 0).toLocaleString()}</td>
-                  <td className="px-4 py-3 text-neutral-500">
-                    {new Date(ad.createdAt).toLocaleDateString()}
-                  </td>
-                  <td className="px-4 py-3">
-                    <Link href={`/ads/${ad.id}?campaignId=${campaignId}`}>
-                      <Button variant="secondary" className="px-2.5 py-1 text-xs">
-                        View
-                      </Button>
-                    </Link>
-                  </td>
+        <>
+          {/* Desktop table */}
+          <div className="hidden sm:block overflow-hidden rounded-xl border border-border bg-card">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border text-left text-muted-foreground">
+                  <th className="px-4 py-3.5 font-medium">Title</th>
+                  <th className="px-4 py-3.5 font-medium">Status</th>
+                  <th className="px-4 py-3.5 font-medium">Locale</th>
+                  <th className="px-4 py-3.5 font-medium">Views</th>
+                  <th className="px-4 py-3.5 font-medium">Created</th>
+                  <th className="px-4 py-3.5 font-medium">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </Card>
+              </thead>
+              <tbody>
+                {ads.map((ad, i) => (
+                  <motion.tr
+                    key={ad.id}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.05, duration: 0.3 }}
+                    className="border-b border-border last:border-0 hover:bg-accent/50 transition-colors"
+                  >
+                    <td className="px-4 py-3.5">
+                      <Link
+                        href={`/ads/${ad.id}?campaignId=${campaignId}`}
+                        className="font-medium hover:text-primary transition-colors"
+                      >
+                        {ad.title}
+                      </Link>
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <Badge status={ad.status} />
+                    </td>
+                    <td className="px-4 py-3.5 text-muted-foreground">{ad.targetLocale}</td>
+                    <td className="px-4 py-3.5 tabular-nums">{(viewsByAdId[ad.id] ?? 0).toLocaleString()}</td>
+                    <td className="px-4 py-3.5 text-muted-foreground">
+                      {new Date(ad.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <Link href={`/ads/${ad.id}?campaignId=${campaignId}`}>
+                        <Button variant="secondary" size="sm">
+                          <Eye className="size-3.5" />
+                          View
+                        </Button>
+                      </Link>
+                    </td>
+                  </motion.tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile cards */}
+          <div className="sm:hidden flex flex-col gap-3">
+            {ads.map((ad, i) => (
+              <motion.div
+                key={ad.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05, duration: 0.3 }}
+                className="rounded-xl border border-border bg-card p-4"
+              >
+                <div className="flex items-start justify-between mb-2">
+                  <Link
+                    href={`/ads/${ad.id}?campaignId=${campaignId}`}
+                    className="font-medium hover:text-primary transition-colors"
+                  >
+                    {ad.title}
+                  </Link>
+                  <Badge status={ad.status} />
+                </div>
+                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                  <span>{ad.targetLocale}</span>
+                  <span className="tabular-nums">{(viewsByAdId[ad.id] ?? 0).toLocaleString()} views</span>
+                </div>
+                <div className="mt-3">
+                  <Link href={`/ads/${ad.id}?campaignId=${campaignId}`}>
+                    <Button variant="secondary" size="sm" className="w-full">
+                      <Eye className="size-3.5" />
+                      View
+                    </Button>
+                  </Link>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </>
       )}
 
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-3">
-          <Button variant="secondary" disabled={page === 0} onClick={() => load(page - 1)}>
+          <Button variant="secondary" size="sm" disabled={page === 0} onClick={() => load(page - 1)}>
+            <ChevronLeft className="size-4" />
             Previous
           </Button>
-          <span className="text-sm text-neutral-500">
+          <span className="text-sm text-muted-foreground tabular-nums">
             Page {page + 1} of {totalPages}
           </span>
-          <Button
-            variant="secondary"
-            disabled={page >= totalPages - 1}
-            onClick={() => load(page + 1)}
-          >
+          <Button variant="secondary" size="sm" disabled={page >= totalPages - 1} onClick={() => load(page + 1)}>
             Next
+            <ChevronRight className="size-4" />
           </Button>
         </div>
       )}

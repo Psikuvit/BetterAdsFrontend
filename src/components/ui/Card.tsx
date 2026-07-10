@@ -1,15 +1,35 @@
-export function Card({
-  children,
-  className = "",
-}: {
+import { cn } from "@/lib/utils";
+
+interface CardProps {
   children: React.ReactNode;
   className?: string;
-}) {
+}
+
+export function Card({ children, className = "" }: CardProps) {
   return (
     <div
-      className={`rounded-lg border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900 ${className}`}
+      className={cn(
+        "rounded-xl border border-border bg-card p-6",
+        className
+      )}
     >
       {children}
     </div>
+  );
+}
+
+export function CardHeader({ children, className = "" }: CardProps) {
+  return (
+    <div className={cn("flex items-center justify-between mb-4", className)}>
+      {children}
+    </div>
+  );
+}
+
+export function CardTitle({ children, className = "" }: CardProps) {
+  return (
+    <h3 className={cn("text-sm font-medium text-foreground", className)}>
+      {children}
+    </h3>
   );
 }

@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { SubmitEvent, useState } from "react";
+import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Card } from "@/components/ui/Card";
 import { errorMessage } from "@/lib/errors";
+import { ArrowRight } from "lucide-react";
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -17,7 +17,7 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
     setLoading(true);
@@ -32,41 +32,63 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4">
-      <Card className="w-full max-w-sm">
-        <h1 className="mb-1 text-xl font-semibold">Sign in</h1>
-        <p className="mb-6 text-sm text-neutral-500">Welcome back to BetterAds.</p>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <Input
-            label="Email"
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            autoComplete="email"
-          />
-          <Input
-            label="Password"
-            type="password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            autoComplete="current-password"
-          />
-          {error && <p className="text-sm text-red-600">{error}</p>}
-          <Button type="submit" loading={loading} className="w-full">
-            Sign in
-          </Button>
-        </form>
-        <div className="mt-4 flex justify-between text-sm text-neutral-500">
-          <Link href="/register" className="hover:text-neutral-900 dark:hover:text-neutral-100">
-            Create account
-          </Link>
-          <Link href="/forgot-password" className="hover:text-neutral-900 dark:hover:text-neutral-100">
-            Forgot password?
-          </Link>
+    <div className="relative flex min-h-screen items-center justify-center px-4 overflow-hidden">
+      {/* Background gradient */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full bg-electric-blue/8 blur-[120px]" />
+        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full bg-vibrant-purple/6 blur-[100px]" />
+      </div>
+      <div className="relative w-full max-w-sm">
+        <div className="rounded-2xl border border-border bg-card p-8 shadow-sm backdrop-blur-sm">
+          <div className="mb-8 text-center">
+            <h1 className="text-2xl font-semibold tracking-tight">
+              Better<span className="text-primary">Ads</span>
+            </h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Welcome back. Sign in to your account.
+            </p>
+          </div>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <Input
+              label="Email"
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
+              placeholder="you@example.com"
+            />
+            <Input
+              label="Password"
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
+              placeholder="Enter your password"
+            />
+            {error && <p className="text-xs text-destructive">{error}</p>}
+            <Button type="submit" loading={loading} className="w-full">
+              Sign in
+              <ArrowRight className="size-4" />
+            </Button>
+          </form>
+          <div className="mt-6 flex items-center justify-between text-sm">
+            <Link
+              href="/register"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Create account
+            </Link>
+            <Link
+              href="/forgot-password"
+              className="text-primary hover:text-primary/80 transition-colors"
+            >
+              Forgot password?
+            </Link>
+          </div>
         </div>
-      </Card>
+      </div>
     </div>
   );
 }

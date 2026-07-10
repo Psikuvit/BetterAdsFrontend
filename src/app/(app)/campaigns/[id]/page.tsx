@@ -1,6 +1,6 @@
 "use client";
 
-import { SubmitEvent, useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import {
@@ -12,16 +12,31 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { motion } from "framer-motion";
 import { RequireAuth } from "@/components/RequireAuth";
-import { Card } from "@/components/ui/Card";
+import { GlassCard } from "@/components/ui/GlassCard";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { Spinner } from "@/components/ui/Spinner";
 import { FundCampaignPanel } from "@/components/FundCampaignPanel";
 import { useToast } from "@/context/ToastContext";
 import { errorMessage } from "@/lib/errors";
 import * as campaignsApi from "@/lib/api/campaigns";
 import { Campaign, CampaignAnalytics, CampaignStatus, CampaignTimeseriesPoint } from "@/lib/types";
+import {
+  ArrowLeft,
+  Upload,
+  List,
+  Edit3,
+  Eye,
+  DollarSign,
+  Target,
+  TrendingUp,
+  BarChart3,
+  Save,
+  X,
+} from "lucide-react";
 
 const STATUS_OPTIONS: CampaignStatus[] = ["DRAFT", "ACTIVE", "PAUSED", "COMPLETED", "ARCHIVED"];
 
@@ -74,7 +89,7 @@ function CampaignDetailContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [days]);
 
-  async function handleSave(e: SubmitEvent<HTMLFormElement>) {
+  async function handleSave(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setSaveError("");
     setSaving(true);
@@ -108,55 +123,74 @@ function CampaignDetailContent() {
     loadAnalytics();
   }
 
-  if (loading) return <p className="text-sm text-neutral-500">Loading campaign...</p>;
-  if (error) return <p className="text-sm text-red-600">{error}</p>;
+  if (loading) return (
+    <div className="flex min-h-[50vh] items-center justify-center gap-2 text-sm text-muted-foreground">
+      <Spinner />
+      Loading campaign...
+    </div>
+  );
+  
+  if (error) return (
+    <div className="flex min-h-[50vh] items-center justify-center">
+      <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-4 text-sm text-destructive">{error}</div>
+    </div>
+  );
+  
   if (!campaign) return null;
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <Link
-            href="/campaigns"
-            className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100"
-          >
-            ← Back to campaigns
-          </Link>
-          <div className="mt-1 flex items-center gap-3">
-            <h1 className="text-xl font-semibold">{campaign.name || "Untitled campaign"}</h1>
+      <div>
+        <Link
+          href="/campaigns"
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ArrowLeft className="size-4" />
+          Back to campaigns
+        </Link>
+        <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-semibold tracking-tight">
+              {campaign.name || "Untitled campaign"}
+            </h1>
             <Badge status={campaign.status} />
           </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <select
-            value={campaign.status}
-            disabled={statusSaving}
-            onChange={(e) => handleStatusChange(e.target.value as CampaignStatus)}
-            className="rounded-md border border-neutral-300 bg-white px-3 py-1.5 text-sm capitalize outline-none focus:border-neutral-500 dark:border-neutral-700 dark:bg-neutral-900"
-          >
-            {STATUS_OPTIONS.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
-          <Link href={`/campaigns/${campaignId}/ads`}>
-            <Button variant="secondary">Ads</Button>
-          </Link>
-          <Link href={`/campaigns/${campaignId}/upload`}>
-            <Button variant="secondary">Upload ad</Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            <select
+              value={campaign.status}
+              disabled={statusSaving}
+              onChange={(e) => handleStatusChange(e.target.value as CampaignStatus)}
+              className="h-8 rounded-md border border-input bg-card px-2.5 py-1 text-sm capitalize outline-none transition-all duration-200 focus:border-ring focus:ring-[3px] focus:ring-ring/50"
+            >
+              {STATUS_OPTIONS.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+            <Link href={`/campaigns/${campaignId}/ads`}>
+              <Button variant="secondary" size="sm">
+                <List className="size-4" />
+                Ads
+              </Button>
+            </Link>
+            <Link href={`/campaigns/${campaignId}/upload`}>
+              <Button variant="secondary" size="sm">
+                <Upload className="size-4" />
+                Upload ad
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <div className="mb-3 flex items-center justify-between">
-            <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Details</p>
+        <GlassCard delay={0}>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-medium text-foreground">Details</h3>
             <button
               onClick={() => setEditing((e) => !e)}
-              className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100"
+              className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
+              {editing ? <X className="size-4" /> : <Edit3 className="size-4" />}
               {editing ? "Cancel" : "Edit"}
             </button>
           </div>
@@ -171,72 +205,71 @@ function CampaignDetailContent() {
                 value={budget}
                 onChange={(e) => setBudget(e.target.value)}
               />
-              {saveError && <p className="text-sm text-red-600">{saveError}</p>}
+              {saveError && <p className="text-xs text-destructive">{saveError}</p>}
               <Button type="submit" loading={saving} className="self-start">
+                <Save className="size-4" />
                 Save changes
               </Button>
             </form>
           ) : (
-            <dl className="flex flex-col gap-2 text-sm">
-              <div className="flex justify-between">
-                <dt className="text-neutral-500">Budget</dt>
-                <dd>${campaign.budget.toFixed(2)}</dd>
+            <dl className="flex flex-col gap-3 text-sm">
+              <div className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2">
+                <dt className="text-muted-foreground">Budget</dt>
+                <dd className="tabular-nums font-medium">${campaign.budget.toFixed(2)}</dd>
               </div>
-              <div className="flex justify-between">
-                <dt className="text-neutral-500">Spent</dt>
-                <dd>${campaign.spent.toFixed(2)}</dd>
+              <div className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2">
+                <dt className="text-muted-foreground">Spent</dt>
+                <dd className="tabular-nums font-medium">${campaign.spent.toFixed(2)}</dd>
               </div>
-              <div className="flex justify-between">
-                <dt className="text-neutral-500">Created</dt>
-                <dd>{new Date(campaign.createdAt).toLocaleString()}</dd>
+              <div className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2">
+                <dt className="text-muted-foreground">Created</dt>
+                <dd className="text-foreground">{new Date(campaign.createdAt).toLocaleString()}</dd>
               </div>
             </dl>
           )}
-        </Card>
+        </GlassCard>
 
-        <Card>
-          <p className="mb-3 text-sm font-medium text-neutral-700 dark:text-neutral-300">
-            Fund campaign
-          </p>
+        <GlassCard delay={0.1}>
+          <h3 className="text-sm font-medium text-foreground mb-4">Fund campaign</h3>
           <FundCampaignPanel campaignId={campaignId} onFunded={refreshAll} />
-        </Card>
+        </GlassCard>
       </div>
 
       {analytics && (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          <Card>
-            <p className="text-sm text-neutral-500">Total views</p>
-            <p className="mt-2 text-2xl font-semibold">{analytics.totalViews.toLocaleString()}</p>
-          </Card>
-          <Card>
-            <p className="text-sm text-neutral-500">Total ads</p>
-            <p className="mt-2 text-2xl font-semibold">{analytics.totalAds}</p>
-          </Card>
-          <Card>
-            <p className="text-sm text-neutral-500">Spent</p>
-            <p className="mt-2 text-2xl font-semibold">${analytics.spent.toFixed(2)}</p>
-          </Card>
-          <Card>
-            <p className="text-sm text-neutral-500">Budget</p>
-            <p className="mt-2 text-2xl font-semibold">${analytics.budget.toFixed(2)}</p>
-          </Card>
+          {[
+            { label: "Total views", value: analytics.totalViews.toLocaleString(), icon: <Eye className="size-5 text-primary" />, delay: 0.2 },
+            { label: "Total ads", value: String(analytics.totalAds), icon: <Target className="size-5 text-primary" />, delay: 0.25 },
+            { label: "Spent", value: `$${analytics.spent.toFixed(2)}`, icon: <DollarSign className="size-5 text-primary" />, delay: 0.3 },
+            { label: "Budget", value: `$${analytics.budget.toFixed(2)}`, icon: <TrendingUp className="size-5 text-primary" />, delay: 0.35 },
+          ].map((stat) => (
+            <GlassCard key={stat.label} delay={stat.delay} glow="none">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">{stat.label}</p>
+                  <p className="mt-2 text-2xl font-semibold tabular-nums">{stat.value}</p>
+                </div>
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+                  {stat.icon}
+                </div>
+              </div>
+            </GlassCard>
+          ))}
         </div>
       )}
 
-      <Card>
-        <div className="mb-4 flex items-center justify-between">
-          <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
-            Views over time
-          </p>
-          <div className="flex gap-1">
+      <GlassCard delay={0.4}>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-medium text-foreground">Views over time</h3>
+          <div className="flex gap-1 rounded-lg border border-border p-0.5">
             {[7, 30].map((d) => (
               <button
                 key={d}
                 onClick={() => setDays(d)}
-                className={`rounded-md px-2.5 py-1 text-xs ${
+                className={`rounded-md px-3 py-1 text-xs font-medium transition-all duration-200 ${
                   days === d
-                    ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900"
-                    : "text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {d}d
@@ -245,27 +278,39 @@ function CampaignDetailContent() {
           </div>
         </div>
         {timeseries.length === 0 ? (
-          <p className="text-sm text-neutral-500">No views recorded in this period.</p>
+          <div className="flex flex-col items-center gap-3 py-12 text-center">
+            <BarChart3 className="size-8 text-muted-foreground/40" />
+            <p className="text-sm text-muted-foreground">No views recorded in this period.</p>
+          </div>
         ) : (
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={timeseries}>
-                <CartesianGrid strokeDasharray="3 3" stroke="currentColor" opacity={0.1} />
-                <XAxis dataKey="date" fontSize={12} stroke="currentColor" opacity={0.6} />
-                <YAxis fontSize={12} stroke="currentColor" opacity={0.6} allowDecimals={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="currentColor" opacity={0.08} />
+                <XAxis dataKey="date" fontSize={12} stroke="currentColor" opacity={0.4} tickLine={false} />
+                <YAxis fontSize={12} stroke="currentColor" opacity={0.4} allowDecimals={false} tickLine={false} />
                 <Tooltip
                   contentStyle={{
                     fontSize: 12,
-                    borderRadius: 6,
+                    borderRadius: 8,
                     border: "1px solid var(--color-border, #e5e5e5)",
+                    background: "var(--color-card, #ffffff)",
+                    color: "var(--color-foreground, #050507)",
                   }}
                 />
-                <Line type="monotone" dataKey="views" stroke="#171717" strokeWidth={2} dot={false} />
+                <Line
+                  type="monotone"
+                  dataKey="views"
+                  stroke="#4F46E5"
+                  strokeWidth={2.5}
+                  dot={false}
+                  activeDot={{ r: 4, fill: "#4F46E5" }}
+                />
               </LineChart>
             </ResponsiveContainer>
           </div>
         )}
-      </Card>
+      </GlassCard>
     </div>
   );
 }

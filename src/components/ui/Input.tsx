@@ -1,4 +1,5 @@
 import { InputHTMLAttributes, forwardRef } from "react";
+import { cn } from "@/lib/utils";
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -12,17 +13,25 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   return (
     <div className="flex flex-col gap-1.5">
       {label && (
-        <label htmlFor={id} className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+        <label htmlFor={id} className="text-sm font-medium text-foreground">
           {label}
         </label>
       )}
       <input
         ref={ref}
         id={id}
-        className={`rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-none placeholder:text-neutral-400 focus:border-neutral-500 disabled:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-neutral-500 ${className}`}
+        className={cn(
+          "h-9 rounded-md border border-input bg-card px-3 py-1 text-sm text-foreground outline-none placeholder:text-muted-foreground",
+          "transition-all duration-200",
+          "focus:border-ring focus:ring-[3px] focus:ring-ring/50",
+          "file:mr-3 file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-1 file:text-xs file:font-medium file:text-primary-foreground",
+          "hover:file:bg-primary/90",
+          error && "border-destructive",
+          className
+        )}
         {...props}
       />
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
   );
 });

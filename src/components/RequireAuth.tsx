@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { Role } from "@/lib/types";
+import { Spinner } from "@/components/ui/Spinner";
 
 const DEFAULT_ROUTE_BY_ROLE: Record<Role, string> = {
   ADVERTISER: "/dashboard",
@@ -34,7 +35,8 @@ export function RequireAuth({
 
   if (loading || !user) {
     return (
-      <div className="flex min-h-[50vh] items-center justify-center text-sm text-neutral-500">
+      <div className="flex min-h-[50vh] items-center justify-center gap-2 text-sm text-muted-foreground">
+        <Spinner />
         Loading...
       </div>
     );
@@ -42,7 +44,7 @@ export function RequireAuth({
 
   if (allowedRoles && role && !allowedRoles.includes(role)) {
     return (
-      <div className="flex min-h-[50vh] items-center justify-center text-sm text-neutral-500">
+      <div className="flex min-h-[50vh] items-center justify-center text-sm text-muted-foreground">
         Redirecting...
       </div>
     );

@@ -3,8 +3,9 @@
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
+import { motion } from "framer-motion";
 import { RequireAuth } from "@/components/RequireAuth";
-import { Card } from "@/components/ui/Card";
+import { GlassCard } from "@/components/ui/GlassCard";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/context/ToastContext";
@@ -12,6 +13,18 @@ import { errorMessage } from "@/lib/errors";
 import * as adsApi from "@/lib/api/ads";
 import { subscribeAdEvents } from "@/lib/sse";
 import { AdStatus, AdValidation, EmbedLink } from "@/lib/types";
+import {
+  ArrowLeft,
+  Copy,
+  CheckCircle2,
+  Clock,
+  Loader2,
+  Sparkles,
+  AlertTriangle,
+  XCircle,
+  Code,
+  ExternalLink,
+} from "lucide-react";
 
 const STATUS_NOTES: Record<AdStatus, string> = {
   PENDING: "Your ad is queued for processing.",
@@ -49,17 +62,25 @@ function ValidationTimer() {
   }, []);
 
   return (
-    <div className="flex flex-col items-center gap-3 py-6">
-      <span className="h-8 w-8 animate-spin rounded-full border-2 border-neutral-300 border-t-neutral-900 dark:border-neutral-700 dark:border-t-neutral-100" />
-      <span className="font-mono text-sm text-neutral-500">{formatElapsed(seconds)}</span>
+    <div className="flex flex-col items-center gap-4 py-8">
+      <div className="relative">
+        <Loader2 className="size-10 animate-spin text-primary" />
+      </div>
+      <span className="font-mono text-lg tabular-nums text-muted-foreground">
+        {formatElapsed(seconds)}
+      </span>
     </div>
   );
 }
 
 function ProcessingSpinner() {
   return (
-    <div className="flex flex-col items-center gap-3 py-6">
-      <span className="h-8 w-8 animate-spin rounded-full border-2 border-neutral-300 border-t-neutral-900 dark:border-neutral-700 dark:border-t-neutral-100" />
+    <div className="flex flex-col items-center gap-4 py-8">
+      <div className="relative">
+        <div className="absolute inset-0 animate-ping rounded-full bg-primary/20" />
+        <Sparkles className="size-10 text-primary relative" />
+      </div>
+      <p className="text-sm text-muted-foreground">Processing your ad...</p>
     </div>
   );
 }
@@ -93,8 +114,8 @@ function FeatureSelectionForm({ adId, onSubmitted }: { adId: number; onSubmitted
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+    <div className="flex flex-col gap-4 mt-4">
+      <p className="text-sm font-medium text-foreground">
         Translate to
       </p>
       <div className="flex flex-wrap gap-2">
@@ -106,10 +127,10 @@ function FeatureSelectionForm({ adId, onSubmitted }: { adId: number; onSubmitted
               type="button"
               disabled={submitting}
               onClick={() => toggle(locale.code)}
-              className={`rounded-md border px-3 py-1.5 text-sm transition-colors disabled:cursor-not-allowed ${
+              className={`rounded-lg border px-4 py-2 text-sm font-medium transition-all duration-200 disabled:cursor-not-allowed ${
                 active
-                  ? "border-neutral-900 bg-neutral-900 text-white dark:border-white dark:bg-white dark:text-neutral-900"
-                  : "border-neutral-300 text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
+                  ? "border-primary bg-primary text-primary-foreground shadow-xs"
+                  : "border-input text-muted-foreground hover:text-foreground hover:bg-accent"
               }`}
             >
               {locale.label}
@@ -117,8 +138,9 @@ function FeatureSelectionForm({ adId, onSubmitted }: { adId: number; onSubmitted
           );
         })}
       </div>
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-xs text-destructive">{error}</p>}
       <Button onClick={handleSubmit} loading={submitting} className="self-start">
+        <Sparkles className="size-4" />
         Generate
       </Button>
     </div>
@@ -146,9 +168,7 @@ function AdDetailContent() {
     adsApi
       .getEmbedLink(adId)
       .then(setEmbed)
-      .catch(() => {
-        // link isn't available yet
-      });
+      .catch(() => {});
   }, [adId]);
 
   useEffect(() => {
@@ -175,7 +195,6 @@ function AdDetailContent() {
         });
       },
       () => {
-        // SSE unavailable — fall back to polling /validation every 3s
         if (!pollRef.current) {
           pollRef.current = setInterval(() => {
             loadValidation().catch(() => {});
@@ -209,73 +228,102 @@ function AdDetailContent() {
     }
   }
 
-  if (loading) return <p className="text-sm text-neutral-500">Loading ad...</p>;
-  if (error) return <p className="text-sm text-red-600">{error}</p>;
+  if (loading) return (
+    <div className="flex min-h-[50vh] items-center justify-center gap-2 text-sm text-muted-foreground">
+      <Loader2 className="size-4 animate-spin" />
+      Loading ad...
+    </div>
+  );
+  
+  if (error) return (
+    <div className="flex min-h-[50vh] items-center justify-center">
+      <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-4 text-sm text-destructive">{error}</div>
+    </div>
+  );
+  
   if (!validation) return null;
 
+  const statusIcon = {
+    PENDING: <Clock className="size-4 text-muted-foreground" />,
+    VALIDATING: <Loader2 className="size-4 animate-spin text-electric-blue" />,
+    AWAITING_FEATURES: <Sparkles className="size-4 text-vibrant-purple" />,
+    PROCESSING: <Sparkles className="size-4 text-electric-blue" />,
+    LIVE: <CheckCircle2 className="size-4 text-success" />,
+    FLAGGED: <AlertTriangle className="size-4 text-pending" />,
+    REJECTED: <XCircle className="size-4 text-destructive" />,
+    FAILED: <XCircle className="size-4 text-destructive" />,
+  };
+
   return (
-    <div className="flex max-w-2xl flex-col gap-6">
+    <div className="max-w-2xl mx-auto flex flex-col gap-6">
       <div>
         {campaignId && (
           <Link
             href={`/campaigns/${campaignId}/ads`}
-            className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100"
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
-            ← Back to campaign ads
+            <ArrowLeft className="size-4" />
+            Back to campaign ads
           </Link>
         )}
-        <div className="mt-1 flex items-center gap-3">
-          <h1 className="text-xl font-semibold">Ad #{validation.adId}</h1>
+        <div className="mt-2 flex items-center gap-3">
+          <h1 className="text-2xl font-semibold tracking-tight">Ad #{validation.adId}</h1>
           <Badge status={validation.status} />
         </div>
       </div>
 
-      <Card>
-        <p className="text-sm text-neutral-700 dark:text-neutral-300">
-          {STATUS_NOTES[validation.status]}
-        </p>
-        {validation.inHumanReview && (
-          <p className="mt-2 text-sm text-amber-600">
-            An admin needs to approve or reject this ad before it can go live.
-          </p>
-        )}
+      <GlassCard
+        glow={validation.status === "LIVE" ? "cyan" : validation.status === "FLAGGED" ? "blue" : "none"}
+      >
+        <div className="flex items-start gap-3">
+          <div className="mt-0.5">{statusIcon[validation.status]}</div>
+          <div className="flex-1">
+            <p className="text-sm text-foreground">{STATUS_NOTES[validation.status]}</p>
+            {validation.inHumanReview && (
+              <div className="mt-3 flex items-center gap-2 rounded-lg bg-pending/10 border border-pending/20 px-3 py-2 text-sm text-pending">
+                <AlertTriangle className="size-4" />
+                An admin needs to approve or reject this ad before it can go live.
+              </div>
+            )}
 
-        {WAITING_STATUSES.includes(validation.status) && <ValidationTimer />}
-        {validation.status === "PROCESSING" && <ProcessingSpinner />}
-        {validation.status === "AWAITING_FEATURES" && (
-          <div className="mt-4">
-            <FeatureSelectionForm adId={adId} onSubmitted={() => loadValidation()} />
+            {WAITING_STATUSES.includes(validation.status) && <ValidationTimer />}
+            {validation.status === "PROCESSING" && <ProcessingSpinner />}
+            {validation.status === "AWAITING_FEATURES" && (
+              <FeatureSelectionForm adId={adId} onSubmitted={() => loadValidation()} />
+            )}
           </div>
-        )}
-      </Card>
+        </div>
+      </GlassCard>
 
       {validation.status === "LIVE" && (
-        <Card>
-          <p className="mb-3 text-sm font-medium text-neutral-700 dark:text-neutral-300">
-            Embed
-          </p>
+        <GlassCard delay={0.2}>
+          <h3 className="text-sm font-medium text-foreground mb-4">Embed</h3>
           {embed ? (
             <div className="flex flex-col gap-4">
               <div className="flex items-center gap-2">
-                <code className="flex-1 truncate rounded-md bg-neutral-100 px-3 py-2 text-xs dark:bg-neutral-800">
-                  {embed.embedUrl}
-                </code>
-                <Button variant="secondary" onClick={() => copy(embed.embedUrl, "Embed URL")}>
+                <div className="flex-1 flex items-center gap-2 rounded-lg border border-input bg-muted/50 px-3 py-2 text-xs font-mono truncate">
+                  <Code className="size-3.5 text-muted-foreground flex-shrink-0" />
+                  <code className="truncate text-foreground">{embed.embedUrl}</code>
+                </div>
+                <Button variant="secondary" size="sm" onClick={() => copy(embed.embedUrl, "Embed URL")}>
+                  <Copy className="size-3.5" />
                   Copy
                 </Button>
               </div>
               <div className="flex items-start gap-2">
-                <pre className="flex-1 overflow-x-auto rounded-md bg-neutral-100 px-3 py-2 text-xs dark:bg-neutral-800">
+                <pre className="flex-1 overflow-x-auto rounded-lg border border-input bg-muted/50 px-3 py-2 text-xs font-mono text-foreground">
                   {embed.embedSnippet}
                 </pre>
                 <Button
                   variant="secondary"
+                  size="sm"
                   onClick={() => copy(embed.embedSnippet, "Embed snippet")}
                 >
+                  <Copy className="size-3.5" />
                   Copy
                 </Button>
               </div>
-              <div className="overflow-hidden rounded-md border border-neutral-200 dark:border-neutral-800">
+              <div className="overflow-hidden rounded-xl border border-border">
                 <iframe
                   src={embed.embedUrl}
                   width="100%"
@@ -286,9 +334,12 @@ function AdDetailContent() {
               </div>
             </div>
           ) : (
-            <p className="text-sm text-neutral-500">Loading embed link...</p>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="size-4 animate-spin" />
+              Loading embed link...
+            </div>
           )}
-        </Card>
+        </GlassCard>
       )}
     </div>
   );
@@ -297,7 +348,7 @@ function AdDetailContent() {
 export default function AdDetailPage() {
   return (
     <RequireAuth allowedRoles={["ADVERTISER", "ADMIN"]}>
-      <Suspense fallback={<p className="text-sm text-neutral-500">Loading ad...</p>}>
+      <Suspense fallback={<div className="flex min-h-[50vh] items-center justify-center gap-2 text-sm text-muted-foreground"><Loader2 className="size-4 animate-spin" />Loading ad...</div>}>
         <AdDetailContent />
       </Suspense>
     </RequireAuth>
