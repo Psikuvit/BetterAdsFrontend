@@ -49,7 +49,7 @@ function ReviewQueueContent() {
           campaignsApi.getCampaignAds(campaign.id, { page, size: 50 })
         );
         for (const ad of ads) {
-          if (ad.status === "flagged") {
+          if (ad.status === "FLAGGED") {
             results.push({ ad, campaignName: campaign.name || `Campaign #${campaign.id}` });
           }
         }

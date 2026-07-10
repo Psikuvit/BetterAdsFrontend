@@ -23,7 +23,7 @@ import { errorMessage } from "@/lib/errors";
 import * as campaignsApi from "@/lib/api/campaigns";
 import { Campaign, CampaignAnalytics, CampaignStatus, CampaignTimeseriesPoint } from "@/lib/types";
 
-const STATUS_OPTIONS: CampaignStatus[] = ["draft", "active", "paused", "completed", "archived"];
+const STATUS_OPTIONS: CampaignStatus[] = ["DRAFT", "ACTIVE", "PAUSED", "COMPLETED", "ARCHIVED"];
 
 function CampaignDetailContent() {
   const params = useParams<{ id: string }>();

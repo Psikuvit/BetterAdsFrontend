@@ -14,11 +14,11 @@ export interface Me {
 }
 
 export type CampaignStatus =
-  | "draft"
-  | "active"
-  | "paused"
-  | "completed"
-  | "archived";
+  | "DRAFT"
+  | "ACTIVE"
+  | "PAUSED"
+  | "COMPLETED"
+  | "ARCHIVED";
 
 export interface Campaign {
   id: number;
@@ -31,13 +31,14 @@ export interface Campaign {
 }
 
 export type AdStatus =
-  | "pending"
-  | "validating"
-  | "processing"
-  | "live"
-  | "flagged"
-  | "rejected"
-  | "failed";
+  | "PENDING"
+  | "VALIDATING"
+  | "AWAITING_FEATURES"
+  | "PROCESSING"
+  | "LIVE"
+  | "FLAGGED"
+  | "REJECTED"
+  | "FAILED";
 
 export interface Ad {
   id: number;
