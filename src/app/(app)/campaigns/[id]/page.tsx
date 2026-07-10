@@ -115,9 +115,17 @@ function CampaignDetailContent() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <h1 className="text-xl font-semibold">{campaign.name || "Untitled campaign"}</h1>
-          <Badge status={campaign.status} />
+        <div>
+          <Link
+            href="/campaigns"
+            className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100"
+          >
+            ← Back to campaigns
+          </Link>
+          <div className="mt-1 flex items-center gap-3">
+            <h1 className="text-xl font-semibold">{campaign.name || "Untitled campaign"}</h1>
+            <Badge status={campaign.status} />
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <select

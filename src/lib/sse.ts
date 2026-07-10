@@ -38,7 +38,12 @@ export function subscribeAdEvents(
 
       while (true) {
         const { done, value } = await reader.read();
-        if (done) break;
+        if (done) {
+          if (!controller.signal.aborted) {
+            onError?.(new Error("SSE stream closed"));
+          }
+          break;
+        }
         buffer += decoder.decode(value, { stream: true });
 
         let sepIndex: number;

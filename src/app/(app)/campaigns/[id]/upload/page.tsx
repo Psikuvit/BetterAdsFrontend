@@ -79,7 +79,7 @@ function UploadContent() {
       });
 
       setStep("done");
-      router.push(`/ads/${adId}`);
+      router.push(`/ads/${adId}?campaignId=${campaignId}`);
     } catch (err) {
       setError(errorMessage(err));
       setStep("idle");

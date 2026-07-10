@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useParams } from "next/navigation";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { useParams, useSearchParams } from "next/navigation";
 import { RequireAuth } from "@/components/RequireAuth";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -127,6 +128,8 @@ function FeatureSelectionForm({ adId, onSubmitted }: { adId: number; onSubmitted
 function AdDetailContent() {
   const params = useParams<{ id: string }>();
   const adId = Number(params.id);
+  const searchParams = useSearchParams();
+  const campaignId = searchParams.get("campaignId");
   const { showToast } = useToast();
 
   const [validation, setValidation] = useState<AdValidation | null>(null);
@@ -212,9 +215,19 @@ function AdDetailContent() {
 
   return (
     <div className="flex max-w-2xl flex-col gap-6">
-      <div className="flex items-center gap-3">
-        <h1 className="text-xl font-semibold">Ad #{validation.adId}</h1>
-        <Badge status={validation.status} />
+      <div>
+        {campaignId && (
+          <Link
+            href={`/campaigns/${campaignId}/ads`}
+            className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100"
+          >
+            ← Back to campaign ads
+          </Link>
+        )}
+        <div className="mt-1 flex items-center gap-3">
+          <h1 className="text-xl font-semibold">Ad #{validation.adId}</h1>
+          <Badge status={validation.status} />
+        </div>
       </div>
 
       <Card>
@@ -285,7 +298,9 @@ function AdDetailContent() {
 export default function AdDetailPage() {
   return (
     <RequireAuth allowedRoles={["ADVERTISER", "ADMIN"]}>
-      <AdDetailContent />
+      <Suspense fallback={<p className="text-sm text-neutral-500">Loading ad...</p>}>
+        <AdDetailContent />
+      </Suspense>
     </RequireAuth>
   );
 }

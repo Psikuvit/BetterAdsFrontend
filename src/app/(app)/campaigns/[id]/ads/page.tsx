@@ -85,6 +85,7 @@ function CampaignAdsContent() {
                 <th className="px-4 py-3 font-medium">Locale</th>
                 <th className="px-4 py-3 font-medium">Views</th>
                 <th className="px-4 py-3 font-medium">Created</th>
+                <th className="px-4 py-3 font-medium">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -94,7 +95,10 @@ function CampaignAdsContent() {
                   className="border-b border-neutral-100 last:border-0 hover:bg-neutral-50 dark:border-neutral-900 dark:hover:bg-neutral-900/50"
                 >
                   <td className="px-4 py-3">
-                    <Link href={`/ads/${ad.id}`} className="font-medium hover:underline">
+                    <Link
+                      href={`/ads/${ad.id}?campaignId=${campaignId}`}
+                      className="font-medium hover:underline"
+                    >
                       {ad.title}
                     </Link>
                   </td>
@@ -105,6 +109,13 @@ function CampaignAdsContent() {
                   <td className="px-4 py-3">{(viewsByAdId[ad.id] ?? 0).toLocaleString()}</td>
                   <td className="px-4 py-3 text-neutral-500">
                     {new Date(ad.createdAt).toLocaleDateString()}
+                  </td>
+                  <td className="px-4 py-3">
+                    <Link href={`/ads/${ad.id}?campaignId=${campaignId}`}>
+                      <Button variant="secondary" className="px-2.5 py-1 text-xs">
+                        View
+                      </Button>
+                    </Link>
                   </td>
                 </tr>
               ))}

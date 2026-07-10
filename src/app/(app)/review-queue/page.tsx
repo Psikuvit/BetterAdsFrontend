@@ -107,7 +107,7 @@ function ReviewQueueContent() {
                   {campaignName} · Ad #{ad.id} · {ad.targetLocale}
                 </p>
                 <Link
-                  href={`/ads/${ad.id}`}
+                  href={`/ads/${ad.id}?campaignId=${ad.campaignId}`}
                   className="text-sm text-neutral-500 underline hover:text-neutral-900 dark:hover:text-neutral-100"
                 >
                   View ad

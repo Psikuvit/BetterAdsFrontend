@@ -119,6 +119,7 @@ function CampaignsContent() {
                 <th className="px-4 py-3 font-medium">Budget</th>
                 <th className="px-4 py-3 font-medium">Spent</th>
                 <th className="px-4 py-3 font-medium">Created</th>
+                <th className="px-4 py-3 font-medium">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -139,6 +140,20 @@ function CampaignsContent() {
                   <td className="px-4 py-3">${c.spent.toFixed(2)}</td>
                   <td className="px-4 py-3 text-neutral-500">
                     {new Date(c.createdAt).toLocaleDateString()}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex gap-2">
+                      <Link href={`/campaigns/${c.id}`}>
+                        <Button variant="secondary" className="px-2.5 py-1 text-xs">
+                          View
+                        </Button>
+                      </Link>
+                      <Link href={`/campaigns/${c.id}/upload`}>
+                        <Button variant="secondary" className="px-2.5 py-1 text-xs">
+                          Upload ad
+                        </Button>
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ))}
