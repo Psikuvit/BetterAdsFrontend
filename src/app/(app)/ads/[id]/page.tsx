@@ -282,7 +282,6 @@ function AdDetailContent() {
                   height={360}
                   frameBorder={0}
                   allow="autoplay; fullscreen"
-                  allowFullScreen
                 />
               </div>
             </div>
