@@ -5,6 +5,7 @@ import Link from "next/link";
 import { RequireAuth } from "@/components/RequireAuth";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 import { errorMessage } from "@/lib/errors";
 import * as analyticsApi from "@/lib/api/analytics";
 import { AdvertiserAnalytics } from "@/lib/types";
@@ -58,12 +59,17 @@ function DashboardContent() {
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Dashboard</h1>
-        <Link
-          href="/campaigns"
-          className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100"
-        >
-          View campaigns →
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link
+            href="/campaigns"
+            className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100"
+          >
+            View campaigns →
+          </Link>
+          <Link href="/campaigns?new=1">
+            <Button>New campaign</Button>
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
