@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useParams } from "next/navigation";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { useParams, useSearchParams } from "next/navigation";
 import { RequireAuth } from "@/components/RequireAuth";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -13,18 +14,122 @@ import { subscribeAdEvents } from "@/lib/sse";
 import { AdStatus, AdValidation, EmbedLink } from "@/lib/types";
 
 const STATUS_NOTES: Record<AdStatus, string> = {
-  pending: "Your ad is queued for processing.",
-  validating: "Content is being validated.",
-  processing: "Translation and speech processing in progress.",
-  live: "Your ad is live and ready to embed.",
-  flagged: "This ad was flagged and is waiting on human review.",
-  rejected: "This ad was rejected.",
-  failed: "Processing failed for this ad.",
+  PENDING: "Your ad is queued for processing.",
+  VALIDATING: "Content is being validated.",
+  AWAITING_FEATURES: "Your ad passed validation. Choose which locales to generate below.",
+  PROCESSING: "Translation and speech processing in progress.",
+  LIVE: "Your ad is live and ready to embed.",
+  FLAGGED: "This ad was flagged and is waiting on human review.",
+  REJECTED: "This ad was rejected.",
+  FAILED: "Processing failed for this ad.",
 };
+
+const LOCALE_OPTIONS = [
+  { code: "en", label: "English" },
+  { code: "es", label: "Spanish" },
+  { code: "fr", label: "French" },
+  { code: "de", label: "German" },
+];
+
+const WAITING_STATUSES: AdStatus[] = ["PENDING", "VALIDATING"];
+const TERMINAL_STATUSES: AdStatus[] = ["LIVE", "REJECTED", "FAILED"];
+
+function formatElapsed(totalSeconds: number) {
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
+
+function ValidationTimer() {
+  const [seconds, setSeconds] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => setSeconds((s) => s + 1), 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="flex flex-col items-center gap-3 py-6">
+      <span className="h-8 w-8 animate-spin rounded-full border-2 border-neutral-300 border-t-neutral-900 dark:border-neutral-700 dark:border-t-neutral-100" />
+      <span className="font-mono text-sm text-neutral-500">{formatElapsed(seconds)}</span>
+    </div>
+  );
+}
+
+function ProcessingSpinner() {
+  return (
+    <div className="flex flex-col items-center gap-3 py-6">
+      <span className="h-8 w-8 animate-spin rounded-full border-2 border-neutral-300 border-t-neutral-900 dark:border-neutral-700 dark:border-t-neutral-100" />
+    </div>
+  );
+}
+
+function FeatureSelectionForm({ adId, onSubmitted }: { adId: number; onSubmitted: () => void }) {
+  const [selected, setSelected] = useState<string[]>(["en"]);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+
+  function toggle(code: string) {
+    setSelected((prev) =>
+      prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code]
+    );
+  }
+
+  async function handleSubmit() {
+    if (selected.length === 0) {
+      setError("Choose at least one locale.");
+      return;
+    }
+    setError("");
+    setSubmitting(true);
+    try {
+      await adsApi.selectFeatures(adId, selected);
+      onSubmitted();
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+        Translate to
+      </p>
+      <div className="flex flex-wrap gap-2">
+        {LOCALE_OPTIONS.map((locale) => {
+          const active = selected.includes(locale.code);
+          return (
+            <button
+              key={locale.code}
+              type="button"
+              disabled={submitting}
+              onClick={() => toggle(locale.code)}
+              className={`rounded-md border px-3 py-1.5 text-sm transition-colors disabled:cursor-not-allowed ${
+                active
+                  ? "border-neutral-900 bg-neutral-900 text-white dark:border-white dark:bg-white dark:text-neutral-900"
+                  : "border-neutral-300 text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
+              }`}
+            >
+              {locale.label}
+            </button>
+          );
+        })}
+      </div>
+      {error && <p className="text-sm text-red-600">{error}</p>}
+      <Button onClick={handleSubmit} loading={submitting} className="self-start">
+        Generate
+      </Button>
+    </div>
+  );
+}
 
 function AdDetailContent() {
   const params = useParams<{ id: string }>();
   const adId = Number(params.id);
+  const searchParams = useSearchParams();
+  const campaignId = searchParams.get("campaignId");
   const { showToast } = useToast();
 
   const [validation, setValidation] = useState<AdValidation | null>(null);
@@ -54,7 +159,7 @@ function AdDetailContent() {
   }, [loadValidation]);
 
   useEffect(() => {
-    if (validation?.status === "live") {
+    if (validation?.status === "LIVE") {
       loadEmbed();
     }
   }, [validation?.status, loadEmbed]);
@@ -66,7 +171,7 @@ function AdDetailContent() {
         setValidation({
           adId: event.adId,
           status: event.status as AdStatus,
-          inHumanReview: event.status === "flagged",
+          inHumanReview: event.status === "FLAGGED",
         });
       },
       () => {
@@ -89,7 +194,7 @@ function AdDetailContent() {
   }, [adId, loadValidation]);
 
   useEffect(() => {
-    if (validation && ["live", "rejected", "failed"].includes(validation.status) && pollRef.current) {
+    if (validation && TERMINAL_STATUSES.includes(validation.status) && pollRef.current) {
       clearInterval(pollRef.current);
       pollRef.current = null;
     }
@@ -110,9 +215,19 @@ function AdDetailContent() {
 
   return (
     <div className="flex max-w-2xl flex-col gap-6">
-      <div className="flex items-center gap-3">
-        <h1 className="text-xl font-semibold">Ad #{validation.adId}</h1>
-        <Badge status={validation.status} />
+      <div>
+        {campaignId && (
+          <Link
+            href={`/campaigns/${campaignId}/ads`}
+            className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100"
+          >
+            ← Back to campaign ads
+          </Link>
+        )}
+        <div className="mt-1 flex items-center gap-3">
+          <h1 className="text-xl font-semibold">Ad #{validation.adId}</h1>
+          <Badge status={validation.status} />
+        </div>
       </div>
 
       <Card>
@@ -124,9 +239,17 @@ function AdDetailContent() {
             An admin needs to approve or reject this ad before it can go live.
           </p>
         )}
+
+        {WAITING_STATUSES.includes(validation.status) && <ValidationTimer />}
+        {validation.status === "PROCESSING" && <ProcessingSpinner />}
+        {validation.status === "AWAITING_FEATURES" && (
+          <div className="mt-4">
+            <FeatureSelectionForm adId={adId} onSubmitted={() => loadValidation()} />
+          </div>
+        )}
       </Card>
 
-      {validation.status === "live" && (
+      {validation.status === "LIVE" && (
         <Card>
           <p className="mb-3 text-sm font-medium text-neutral-700 dark:text-neutral-300">
             Embed
@@ -159,7 +282,6 @@ function AdDetailContent() {
                   height={360}
                   frameBorder={0}
                   allow="autoplay; fullscreen"
-                  allowFullScreen
                 />
               </div>
             </div>
@@ -175,7 +297,9 @@ function AdDetailContent() {
 export default function AdDetailPage() {
   return (
     <RequireAuth allowedRoles={["ADVERTISER", "ADMIN"]}>
-      <AdDetailContent />
+      <Suspense fallback={<p className="text-sm text-neutral-500">Loading ad...</p>}>
+        <AdDetailContent />
+      </Suspense>
     </RequireAuth>
   );
 }

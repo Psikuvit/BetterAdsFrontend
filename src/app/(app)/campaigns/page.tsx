@@ -1,12 +1,14 @@
 "use client";
 
-import { SubmitEvent, useCallback, useEffect, useState } from "react";
+import { Suspense, SubmitEvent, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { RequireAuth } from "@/components/RequireAuth";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
 import { errorMessage } from "@/lib/errors";
 import * as campaignsApi from "@/lib/api/campaigns";
@@ -14,13 +16,16 @@ import { Campaign } from "@/lib/types";
 
 function CampaignsContent() {
   const { showToast } = useToast();
+  const { role } = useAuth();
+  const canCreate = role === "ADVERTISER";
+  const searchParams = useSearchParams();
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const [showForm, setShowForm] = useState(false);
+  const [showForm, setShowForm] = useState(() => searchParams.get("new") === "1");
   const [name, setName] = useState("");
   const [budget, setBudget] = useState("");
   const [creating, setCreating] = useState(false);
@@ -67,12 +72,14 @@ function CampaignsContent() {
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Campaigns</h1>
-        <Button onClick={() => setShowForm((s) => !s)} variant={showForm ? "secondary" : "primary"}>
-          {showForm ? "Cancel" : "New campaign"}
-        </Button>
+        {canCreate && (
+          <Button onClick={() => setShowForm((s) => !s)} variant={showForm ? "secondary" : "primary"}>
+            {showForm ? "Cancel" : "New campaign"}
+          </Button>
+        )}
       </div>
 
-      {showForm && (
+      {showForm && canCreate && (
         <Card>
           <form onSubmit={handleCreate} className="flex flex-col gap-4 sm:flex-row sm:items-end">
             <div className="flex-1">
@@ -106,8 +113,13 @@ function CampaignsContent() {
       ) : error ? (
         <p className="text-sm text-red-600">{error}</p>
       ) : campaigns.length === 0 ? (
-        <Card>
-          <p className="text-sm text-neutral-500">No campaigns yet. Create your first one above.</p>
+        <Card className="flex flex-col items-center gap-3 py-10 text-center">
+          <p className="text-sm text-neutral-500">
+            {canCreate ? "No campaigns yet." : "No campaigns to show."}
+          </p>
+          {canCreate && !showForm && (
+            <Button onClick={() => setShowForm(true)}>Create your first campaign</Button>
+          )}
         </Card>
       ) : (
         <Card className="p-0">
@@ -119,6 +131,7 @@ function CampaignsContent() {
                 <th className="px-4 py-3 font-medium">Budget</th>
                 <th className="px-4 py-3 font-medium">Spent</th>
                 <th className="px-4 py-3 font-medium">Created</th>
+                <th className="px-4 py-3 font-medium">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -139,6 +152,20 @@ function CampaignsContent() {
                   <td className="px-4 py-3">${c.spent.toFixed(2)}</td>
                   <td className="px-4 py-3 text-neutral-500">
                     {new Date(c.createdAt).toLocaleDateString()}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex gap-2">
+                      <Link href={`/campaigns/${c.id}`}>
+                        <Button variant="secondary" className="px-2.5 py-1 text-xs">
+                          View
+                        </Button>
+                      </Link>
+                      <Link href={`/campaigns/${c.id}/upload`}>
+                        <Button variant="secondary" className="px-2.5 py-1 text-xs">
+                          Upload ad
+                        </Button>
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -175,7 +202,9 @@ function CampaignsContent() {
 export default function CampaignsPage() {
   return (
     <RequireAuth allowedRoles={["ADVERTISER", "ADMIN"]}>
-      <CampaignsContent />
+      <Suspense fallback={<p className="text-sm text-neutral-500">Loading campaigns...</p>}>
+        <CampaignsContent />
+      </Suspense>
     </RequireAuth>
   );
 }
