@@ -5,6 +5,12 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { Role } from "@/lib/types";
 
+const DEFAULT_ROUTE_BY_ROLE: Record<Role, string> = {
+  ADVERTISER: "/dashboard",
+  ADMIN: "/campaigns",
+  PUBLISHER: "/ads/lookup",
+};
+
 export function RequireAuth({
   children,
   allowedRoles,
@@ -22,7 +28,7 @@ export function RequireAuth({
       return;
     }
     if (allowedRoles && role && !allowedRoles.includes(role)) {
-      router.replace("/dashboard");
+      router.replace(DEFAULT_ROUTE_BY_ROLE[role]);
     }
   }, [loading, user, role, allowedRoles, router]);
 
