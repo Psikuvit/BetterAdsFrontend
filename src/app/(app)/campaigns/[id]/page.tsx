@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/Input";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { FundCampaignPanel } from "@/components/FundCampaignPanel";
+import { CampaignPlayer } from "@/components/CampaignPlayer";
 import { useToast } from "@/context/ToastContext";
 import { errorMessage } from "@/lib/errors";
 import * as campaignsApi from "@/lib/api/campaigns";
@@ -232,6 +233,13 @@ function CampaignDetailContent() {
         </Card>
       </div>
 
+      <Card>
+        <p className="mb-3 text-sm font-medium text-neutral-700 dark:text-neutral-300">
+          Playlist
+        </p>
+        <CampaignPlayer campaignId={campaignId} />
+      </Card>
+
       {embed?.available && (
         <Card>
           <p className="mb-3 text-sm font-medium text-neutral-700 dark:text-neutral-300">
@@ -253,26 +261,6 @@ function CampaignDetailContent() {
               <Button variant="secondary" onClick={() => copy(embed.embedSnippet!, "Embed snippet")}>
                 Copy
               </Button>
-            </div>
-            <div className="overflow-hidden rounded-md border border-neutral-200 dark:border-neutral-800">
-              <iframe
-                src={embed.embedUrl}
-                width="100%"
-                height={360}
-                frameBorder={0}
-                allow="autoplay; fullscreen"
-                onLoad={(e) => {
-                  const iframe = e.currentTarget;
-                  function onMsg(ev: MessageEvent) {
-                    if (ev.data?.type === "ad-resize" && ev.data.width && ev.data.height) {
-                      const ratio = ev.data.height / ev.data.width;
-                      iframe.style.height = `${iframe.clientWidth * ratio}px`;
-                    }
-                  }
-                  window.addEventListener("message", onMsg);
-                  iframe.addEventListener("remove", () => window.removeEventListener("message", onMsg));
-                }}
-              />
             </div>
           </div>
         </Card>
