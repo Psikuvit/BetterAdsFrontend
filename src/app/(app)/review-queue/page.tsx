@@ -5,6 +5,8 @@ import Link from "next/link";
 import { RequireAuth } from "@/components/RequireAuth";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { CardSkeleton } from "@/components/ui/Skeleton";
+import { EmptyState } from "@/components/EmptyState";
 import { useToast } from "@/context/ToastContext";
 import { errorMessage } from "@/lib/errors";
 import * as campaignsApi from "@/lib/api/campaigns";
@@ -82,28 +84,36 @@ function ReviewQueueContent() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-xl font-semibold">Review queue</h1>
-        <p className="mt-1 text-sm text-neutral-500">
+        <h1 className="text-xl font-semibold text-neutral-900 dark:text-white">Review queue</h1>
+        <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
           There&apos;s no dedicated flagged-ads endpoint yet, so this scans every campaign&apos;s
           ads client-side — it may take a moment on large accounts.
         </p>
       </div>
 
       {loading ? (
-        <p className="text-sm text-neutral-500">Scanning campaigns for flagged ads...</p>
+        <div className="flex flex-col gap-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <CardSkeleton key={i} />
+          ))}
+        </div>
       ) : error ? (
         <p className="text-sm text-red-600">{error}</p>
       ) : items.length === 0 ? (
-        <Card>
-          <p className="text-sm text-neutral-500">Nothing flagged for review right now.</p>
+        <Card className="p-0">
+          <EmptyState
+            illustration="success"
+            title="Nothing flagged"
+            description="All ads are looking good. Nothing needs your review right now."
+          />
         </Card>
       ) : (
         <div className="flex flex-col gap-3">
           {items.map(({ ad, campaignName }) => (
             <Card key={ad.id} className="flex items-center justify-between gap-4">
               <div>
-                <p className="font-medium">{ad.title}</p>
-                <p className="text-sm text-neutral-500">
+                <p className="font-medium text-neutral-900 dark:text-white">{ad.title}</p>
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">
                   {campaignName} · Ad #{ad.id} · {ad.targetLocale}
                 </p>
                 <Link

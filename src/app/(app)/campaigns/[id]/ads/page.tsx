@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
+import { TableSkeleton } from "@/components/ui/Skeleton";
+import { EmptyState } from "@/components/EmptyState";
 import { errorMessage } from "@/lib/errors";
 import * as campaignsApi from "@/lib/api/campaigns";
 import * as adsApi from "@/lib/api/ads";
@@ -81,7 +83,7 @@ function CampaignAdsContent() {
           >
             ← Back to campaign
           </Link>
-          <h1 className="mt-1 text-2xl font-medium text-white">Ads</h1>
+          <h1 className="mt-1 text-2xl font-medium text-neutral-900 dark:text-white">Ads</h1>
         </div>
         <Link href={`/campaigns/${campaignId}/upload`}>
           <Button>Upload ad</Button>
@@ -89,12 +91,17 @@ function CampaignAdsContent() {
       </div>
 
       {loading ? (
-        <p className="text-sm text-neutral-500">Loading ads...</p>
+        <TableSkeleton rows={5} />
       ) : error ? (
         <p className="text-sm text-red-600">{error}</p>
       ) : ads.length === 0 ? (
-        <Card>
-          <p className="text-sm text-neutral-500">No ads uploaded to this campaign yet.</p>
+        <Card className="p-0">
+          <EmptyState
+            illustration="ads"
+            title="No ads yet"
+            description="Upload your first ad to this campaign."
+            action={{ label: "Upload ad", onClick: () => {} }}
+          />
         </Card>
       ) : (
         <Card className="p-0">
@@ -113,12 +120,12 @@ function CampaignAdsContent() {
               {ads.map((ad) => (
                 <tr
                   key={ad.id}
-                  className="border-b border-white/5 transition-colors last:border-0 hover:bg-white/[0.04]"
+                  className="border-b border-neutral-100 transition-colors last:border-0 hover:bg-neutral-50 dark:border-white/5 dark:hover:bg-white/[0.04]"
                 >
                   <td className="px-4 py-3">
                     <Link
                       href={`/ads/${ad.id}?campaignId=${campaignId}`}
-                      className="font-medium hover:underline"
+                      className="font-medium text-neutral-900 hover:underline dark:text-white"
                     >
                       {ad.title}
                     </Link>
@@ -127,7 +134,7 @@ function CampaignAdsContent() {
                     <Badge status={ad.status} />
                   </td>
                   <td className="px-4 py-3 text-neutral-500">{ad.targetLocale}</td>
-                  <td className="px-4 py-3">{(viewsByAdId[ad.id] ?? 0).toLocaleString()}</td>
+                  <td className="px-4 py-3 text-neutral-700 dark:text-neutral-100">{(viewsByAdId[ad.id] ?? 0).toLocaleString()}</td>
                   <td className="px-4 py-3 text-neutral-500">
                     {new Date(ad.createdAt).toLocaleDateString()}
                   </td>

@@ -6,6 +6,8 @@ import { RequireAuth } from "@/components/RequireAuth";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { StatCardSkeleton } from "@/components/ui/Skeleton";
+import { EmptyState } from "@/components/EmptyState";
 import { errorMessage } from "@/lib/errors";
 import * as analyticsApi from "@/lib/api/analytics";
 import { AdvertiserAnalytics } from "@/lib/types";
@@ -13,8 +15,8 @@ import { AdvertiserAnalytics } from "@/lib/types";
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
     <Card>
-      <p className="text-sm text-neutral-500">{label}</p>
-      <p className="mt-2 font-mono text-2xl text-white">{value}</p>
+      <p className="text-sm text-neutral-500 dark:text-neutral-400">{label}</p>
+      <p className="mt-2 font-mono text-2xl text-neutral-900 dark:text-white">{value}</p>
     </Card>
   );
 }
@@ -43,7 +45,26 @@ function DashboardContent() {
   }, []);
 
   if (loading) {
-    return <p className="text-sm text-neutral-500">Loading dashboard...</p>;
+    return (
+      <div className="flex flex-col gap-6">
+        <div className="flex items-center justify-between">
+          <div className="h-8 w-40 animate-skeleton rounded-lg" />
+          <div className="h-10 w-32 animate-skeleton rounded-xl" />
+        </div>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <StatCardSkeleton key={i} />
+          ))}
+        </div>
+        <div className="glass rounded-2xl p-5">
+          <div className="h-4 w-32 animate-skeleton rounded mb-3" />
+          <div className="flex gap-2">
+            <div className="h-6 w-16 animate-skeleton rounded-full" />
+            <div className="h-6 w-16 animate-skeleton rounded-full" />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (error) {
@@ -58,7 +79,7 @@ function DashboardContent() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-medium text-white">Dashboard</h1>
+        <h1 className="text-2xl font-medium text-neutral-900 dark:text-white">Dashboard</h1>
         <div className="flex items-center gap-4">
           <Link
             href="/campaigns"
@@ -84,13 +105,17 @@ function DashboardContent() {
           Campaigns by status
         </p>
         {Object.keys(data.campaignsByStatus).length === 0 ? (
-          <p className="text-sm text-neutral-500">No campaigns yet.</p>
+          <EmptyState
+            illustration="campaigns"
+            title="No campaigns yet"
+            description="Create your first campaign to start advertising."
+          />
         ) : (
           <div className="flex flex-wrap gap-2">
             {Object.entries(data.campaignsByStatus).map(([status, count]) => (
               <div key={status} className="flex items-center gap-2">
                 <Badge status={status} />
-                <span className="text-sm text-neutral-500">{count}</span>
+                <span className="text-sm text-neutral-500 dark:text-neutral-400">{count}</span>
               </div>
             ))}
           </div>

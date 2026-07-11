@@ -260,7 +260,17 @@ function AdDetailContent() {
     }
   }
 
-  if (loading) return <p className="text-sm text-neutral-500">Loading ad...</p>;
+  if (loading) {
+    return (
+      <div className="flex max-w-2xl flex-col gap-6">
+        <div className="h-8 w-48 animate-skeleton rounded-lg" />
+        <div className="glass rounded-2xl p-5">
+          <div className="h-4 w-full animate-skeleton rounded mb-3" />
+          <div className="h-4 w-2/3 animate-skeleton rounded" />
+        </div>
+      </div>
+    );
+  }
   if (error) return <p className="text-sm text-red-600">{error}</p>;
   if (!validation) return null;
 
@@ -276,7 +286,7 @@ function AdDetailContent() {
           </Link>
         )}
         <div className="mt-1 flex items-center gap-3">
-          <h1 className="text-xl font-semibold">Ad #{validation.adId}</h1>
+          <h1 className="text-xl font-semibold text-neutral-900 dark:text-white">Ad #{validation.adId}</h1>
           <Badge status={validation.status} />
         </div>
       </div>
@@ -359,6 +369,17 @@ function AdDetailContent() {
                   height={360}
                   frameBorder={0}
                   allow="autoplay; fullscreen"
+                  onLoad={(e) => {
+                    const iframe = e.currentTarget;
+                    function onMsg(ev: MessageEvent) {
+                      if (ev.data?.type === "ad-resize" && ev.data.width && ev.data.height) {
+                        const ratio = ev.data.height / ev.data.width;
+                        iframe.style.height = `${iframe.clientWidth * ratio}px`;
+                      }
+                    }
+                    window.addEventListener("message", onMsg);
+                    iframe.addEventListener("remove", () => window.removeEventListener("message", onMsg));
+                  }}
                 />
               </div>
             </div>

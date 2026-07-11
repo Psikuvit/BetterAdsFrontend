@@ -6,6 +6,8 @@ import { RequireAuth } from "@/components/RequireAuth";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { StatCardSkeleton } from "@/components/ui/Skeleton";
+import { EmptyState } from "@/components/EmptyState";
 import { errorMessage } from "@/lib/errors";
 import * as campaignsApi from "@/lib/api/campaigns";
 import { Ad, Campaign } from "@/lib/types";
@@ -23,8 +25,8 @@ interface AdminStats {
 function StatCard({ label, value, href }: { label: string; value: string; href?: string }) {
   const inner = (
     <>
-      <p className="text-sm text-neutral-500">{label}</p>
-      <p className="mt-2 font-mono text-2xl text-white">{value}</p>
+      <p className="text-sm text-neutral-500 dark:text-neutral-400">{label}</p>
+      <p className="mt-2 font-mono text-2xl text-neutral-900 dark:text-white">{value}</p>
     </>
   );
   return (
@@ -102,14 +104,31 @@ function AdminDashboardContent() {
   const currency = (n: number) =>
     n.toLocaleString(undefined, { style: "currency", currency: "USD" });
 
-  if (loading) return <p className="text-sm text-neutral-500">Loading admin dashboard...</p>;
+  if (loading) {
+    return (
+      <div className="flex flex-col gap-6">
+        <div className="flex items-center justify-between">
+          <div className="h-8 w-48 animate-skeleton rounded-lg" />
+          <div className="flex gap-3">
+            <div className="h-10 w-24 animate-skeleton rounded-xl" />
+            <div className="h-10 w-32 animate-skeleton rounded-xl" />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <StatCardSkeleton key={i} />
+          ))}
+        </div>
+      </div>
+    );
+  }
   if (error) return <p className="text-sm text-red-600">{error}</p>;
   if (!stats) return null;
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-medium text-white">Admin Dashboard</h1>
+        <h1 className="text-2xl font-medium text-neutral-900 dark:text-white">Admin Dashboard</h1>
         <div className="flex items-center gap-3">
           <Link href="/admin/ads">
             <Button variant="secondary">All ads</Button>
@@ -143,13 +162,17 @@ function AdminDashboardContent() {
             Campaigns by status
           </p>
           {Object.keys(stats.campaignsByStatus).length === 0 ? (
-            <p className="text-sm text-neutral-500">No campaigns.</p>
+            <EmptyState
+              illustration="campaigns"
+              title="No campaigns"
+              description="No campaigns have been created yet."
+            />
           ) : (
             <div className="flex flex-wrap gap-2">
               {Object.entries(stats.campaignsByStatus).map(([status, count]) => (
                 <div key={status} className="flex items-center gap-2">
                   <Badge status={status} />
-                  <span className="text-sm text-neutral-500">{count}</span>
+                  <span className="text-sm text-neutral-500 dark:text-neutral-400">{count}</span>
                 </div>
               ))}
             </div>
@@ -161,13 +184,17 @@ function AdminDashboardContent() {
             Ads by status
           </p>
           {Object.keys(stats.adsByStatus).length === 0 ? (
-            <p className="text-sm text-neutral-500">No ads.</p>
+            <EmptyState
+              illustration="ads"
+              title="No ads"
+              description="No ads have been uploaded yet."
+            />
           ) : (
             <div className="flex flex-wrap gap-2">
               {Object.entries(stats.adsByStatus).map(([status, count]) => (
                 <div key={status} className="flex items-center gap-2">
                   <Badge status={status} />
-                  <span className="text-sm text-neutral-500">{count}</span>
+                  <span className="text-sm text-neutral-500 dark:text-neutral-400">{count}</span>
                 </div>
               ))}
             </div>

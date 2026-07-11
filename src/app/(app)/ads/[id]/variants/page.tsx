@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import { RequireAuth } from "@/components/RequireAuth";
 import { Card } from "@/components/ui/Card";
+import { CardSkeleton } from "@/components/ui/Skeleton";
+import { EmptyState } from "@/components/EmptyState";
 import { errorMessage } from "@/lib/errors";
 import * as linksApi from "@/lib/api/links";
 
@@ -36,19 +38,23 @@ function VariantsList() {
         >
           ← Look up another ad
         </Link>
-        <h1 className="mt-1 text-xl font-semibold">
+        <h1 className="mt-1 text-xl font-semibold text-neutral-900 dark:text-white">
           Variants for ad #{adId}
           {locale ? ` (${locale})` : ""}
         </h1>
       </div>
 
       {loading ? (
-        <p className="text-sm text-neutral-500">Loading variants...</p>
+        <CardSkeleton />
       ) : error ? (
         <p className="text-sm text-red-600">{error}</p>
       ) : !variants || variants.length === 0 ? (
-        <Card>
-          <p className="text-sm text-neutral-500">No variants found for this ad.</p>
+        <Card className="p-0">
+          <EmptyState
+            illustration="search"
+            title="No variants found"
+            description="This ad doesn't have any variants yet."
+          />
         </Card>
       ) : (
         <Card className="p-0">
@@ -58,7 +64,7 @@ function VariantsList() {
                 key={i}
                 className="border-b border-neutral-100 px-4 py-3 text-sm last:border-0 dark:border-neutral-900"
               >
-                <code className="break-all">{v}</code>
+                <code className="break-all text-neutral-700 dark:text-neutral-300">{v}</code>
               </li>
             ))}
           </ul>
@@ -71,7 +77,7 @@ function VariantsList() {
 export default function VariantsPage() {
   return (
     <RequireAuth allowedRoles={["PUBLISHER", "ADVERTISER"]}>
-      <Suspense fallback={<p className="text-sm text-neutral-500">Loading...</p>}>
+      <Suspense fallback={<CardSkeleton />}>
         <VariantsList />
       </Suspense>
     </RequireAuth>

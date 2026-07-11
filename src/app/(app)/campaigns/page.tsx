@@ -8,6 +8,8 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { TableSkeleton } from "@/components/ui/Skeleton";
+import { EmptyState } from "@/components/EmptyState";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
 import { errorMessage } from "@/lib/errors";
@@ -71,7 +73,7 @@ function CampaignsContent() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-medium text-white">Campaigns</h1>
+        <h1 className="text-2xl font-medium text-neutral-900 dark:text-white">Campaigns</h1>
         {canCreate && (
           <Button onClick={() => setShowForm((s) => !s)} variant={showForm ? "secondary" : "primary"}>
             {showForm ? "Cancel" : "New campaign"}
@@ -109,17 +111,17 @@ function CampaignsContent() {
       )}
 
       {loading ? (
-        <p className="text-sm text-neutral-500">Loading campaigns...</p>
+        <TableSkeleton rows={5} />
       ) : error ? (
         <p className="text-sm text-red-600">{error}</p>
       ) : campaigns.length === 0 ? (
-        <Card className="flex flex-col items-center gap-3 py-10 text-center">
-          <p className="text-sm text-neutral-500">
-            {canCreate ? "No campaigns yet." : "No campaigns to show."}
-          </p>
-          {canCreate && !showForm && (
-            <Button onClick={() => setShowForm(true)}>Create your first campaign</Button>
-          )}
+        <Card className="p-0">
+          <EmptyState
+            illustration="campaigns"
+            title={canCreate ? "No campaigns yet" : "No campaigns to show"}
+            description={canCreate ? "Create your first campaign to start advertising." : undefined}
+            action={canCreate && !showForm ? { label: "Create campaign", onClick: () => setShowForm(true) } : undefined}
+          />
         </Card>
       ) : (
         <Card className="p-0">
@@ -138,18 +140,18 @@ function CampaignsContent() {
               {campaigns.map((c) => (
                 <tr
                   key={c.id}
-                  className="border-b border-white/5 transition-colors last:border-0 hover:bg-white/[0.04]"
+                  className="border-b border-neutral-100 transition-colors last:border-0 hover:bg-neutral-50 dark:border-white/5 dark:hover:bg-white/[0.04]"
                 >
                   <td className="px-4 py-3">
-                    <Link href={`/campaigns/${c.id}`} className="font-medium hover:underline">
+                    <Link href={`/campaigns/${c.id}`} className="font-medium text-neutral-900 hover:underline dark:text-white">
                       {c.name || "Untitled campaign"}
                     </Link>
                   </td>
                   <td className="px-4 py-3">
                     <Badge status={c.status} />
                   </td>
-                  <td className="px-4 py-3">${c.budget.toFixed(2)}</td>
-                  <td className="px-4 py-3">${c.spent.toFixed(2)}</td>
+                  <td className="px-4 py-3 text-neutral-700 dark:text-neutral-100">${c.budget.toFixed(2)}</td>
+                  <td className="px-4 py-3 text-neutral-700 dark:text-neutral-100">${c.spent.toFixed(2)}</td>
                   <td className="px-4 py-3 text-neutral-500">
                     {new Date(c.createdAt).toLocaleDateString()}
                   </td>
@@ -202,7 +204,7 @@ function CampaignsContent() {
 export default function CampaignsPage() {
   return (
     <RequireAuth allowedRoles={["ADVERTISER", "ADMIN"]}>
-      <Suspense fallback={<p className="text-sm text-neutral-500">Loading campaigns...</p>}>
+      <Suspense fallback={<TableSkeleton rows={5} />}>
         <CampaignsContent />
       </Suspense>
     </RequireAuth>

@@ -21,7 +21,7 @@ function AdLookupContent() {
 
   return (
     <div className="flex max-w-md flex-col gap-6">
-      <h1 className="text-xl font-semibold">Ad variants</h1>
+      <h1 className="text-xl font-semibold text-neutral-900 dark:text-white">Ad variants</h1>
       <Card>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <Input
