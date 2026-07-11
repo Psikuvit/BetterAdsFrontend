@@ -38,13 +38,13 @@ export default function LoginPage() {
       <div className="relative z-10 w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center animate-fade-up">
           <CrystalLogo size={72} />
-          <h1 className="mt-4 text-3xl font-medium text-white">
+          <h1 className="mt-4 text-3xl font-medium text-neutral-900 dark:text-white">
             Better<span className="text-gradient">Ads</span>
           </h1>
         </div>
         <div className="glass rounded-3xl p-8 animate-fade-up" style={{ animationDelay: "0.1s" }}>
-        <h2 className="mb-1 text-2xl font-medium text-white">Welcome Back</h2>
-        <p className="mb-6 text-sm text-white/50">Sign in to access your dashboard.</p>
+        <h2 className="mb-1 text-2xl font-medium text-neutral-900 dark:text-white">Welcome Back</h2>
+        <p className="mb-6 text-sm text-neutral-500 dark:text-white/50">Sign in to access your dashboard.</p>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <Input
             label="Email"
@@ -67,11 +67,11 @@ export default function LoginPage() {
             Sign in
           </Button>
         </form>
-        <div className="mt-5 flex justify-between text-sm text-white/50">
+        <div className="mt-5 flex justify-between text-sm text-neutral-500 dark:text-white/50">
           <Link href="/register" className="text-electric-blue transition-colors hover:text-neon-cyan">
             Create account
           </Link>
-          <Link href="/forgot-password" className="transition-colors hover:text-white/80">
+          <Link href="/forgot-password" className="transition-colors hover:text-neutral-700 dark:hover:text-white/80">
             Forgot password?
           </Link>
         </div>

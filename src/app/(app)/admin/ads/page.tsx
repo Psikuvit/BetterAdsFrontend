@@ -6,6 +6,8 @@ import { RequireAuth } from "@/components/RequireAuth";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { TableSkeleton } from "@/components/ui/Skeleton";
+import { EmptyState } from "@/components/EmptyState";
 import { useToast } from "@/context/ToastContext";
 import { errorMessage } from "@/lib/errors";
 import * as campaignsApi from "@/lib/api/campaigns";
@@ -96,13 +98,13 @@ function AdminAllAdsContent() {
   const filtered = filter === "ALL" ? ads : ads.filter((a) => a.status === filter);
   const statuses = ["ALL", "LIVE", "FLAGGED", "PENDING", "VALIDATING", "PROCESSING", "REJECTED", "FAILED"];
 
-  if (loading) return <p className="text-sm text-neutral-500">Loading all ads...</p>;
+  if (loading) return <TableSkeleton rows={8} />;
   if (error) return <p className="text-sm text-red-600">{error}</p>;
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-medium text-white">All Ads</h1>
+        <h1 className="text-2xl font-medium text-neutral-900 dark:text-white">All Ads</h1>
         <Link href="/admin">
           <Button variant="secondary">Back to dashboard</Button>
         </Link>
@@ -116,7 +118,7 @@ function AdminAllAdsContent() {
             className={`rounded-full px-3 py-1 text-xs font-medium transition-all duration-200 ${
               filter === s
                 ? "bg-gradient-brand text-white shadow-glow-blue"
-                : "border border-white/10 bg-white/5 text-white/50 hover:bg-white/10 hover:text-white/70"
+                : "border border-neutral-200 bg-neutral-100 text-neutral-500 hover:bg-neutral-200 hover:text-neutral-700 dark:border-white/10 dark:bg-white/5 dark:text-white/50 dark:hover:bg-white/10 dark:hover:text-white/70"
             }`}
           >
             {s === "ALL" ? `All (${ads.length})` : `${s} (${ads.filter((a) => a.status === s).length})`}
@@ -125,8 +127,12 @@ function AdminAllAdsContent() {
       </div>
 
       {filtered.length === 0 ? (
-        <Card>
-          <p className="text-sm text-neutral-500">No ads match this filter.</p>
+        <Card className="p-0">
+          <EmptyState
+            illustration="search"
+            title="No ads match this filter"
+            description="Try selecting a different status filter."
+          />
         </Card>
       ) : (
         <Card className="p-0">
@@ -145,9 +151,9 @@ function AdminAllAdsContent() {
               {filtered.map((ad) => (
                 <tr
                   key={ad.id}
-                  className="border-b border-white/5 transition-colors last:border-0 hover:bg-white/[0.04]"
+                  className="border-b border-neutral-100 transition-colors last:border-0 hover:bg-neutral-50 dark:border-white/5 dark:hover:bg-white/[0.04]"
                 >
-                  <td className="px-4 py-3 font-medium">{ad.title || "Untitled"}</td>
+                  <td className="px-4 py-3 font-medium text-neutral-900 dark:text-white">{ad.title || "Untitled"}</td>
                   <td className="px-4 py-3">
                     <Link
                       href={`/campaigns/${ad.campaignId}`}

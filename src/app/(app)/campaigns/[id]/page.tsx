@@ -108,7 +108,24 @@ function CampaignDetailContent() {
     loadAnalytics();
   }
 
-  if (loading) return <p className="text-sm text-neutral-500">Loading campaign...</p>;
+  if (loading) {
+    return (
+      <div className="flex flex-col gap-6">
+        <div className="h-8 w-64 animate-skeleton rounded-lg" />
+        <div className="grid gap-6 lg:grid-cols-2">
+          <div className="glass rounded-2xl p-5">
+            <div className="h-4 w-20 animate-skeleton rounded mb-3" />
+            <div className="h-4 w-full animate-skeleton rounded mb-2" />
+            <div className="h-4 w-2/3 animate-skeleton rounded" />
+          </div>
+          <div className="glass rounded-2xl p-5">
+            <div className="h-4 w-24 animate-skeleton rounded mb-3" />
+            <div className="h-10 w-full animate-skeleton rounded" />
+          </div>
+        </div>
+      </div>
+    );
+  }
   if (error) return <p className="text-sm text-red-600">{error}</p>;
   if (!campaign) return null;
 
@@ -123,7 +140,7 @@ function CampaignDetailContent() {
             ← Back to campaigns
           </Link>
           <div className="mt-1 flex items-center gap-3">
-            <h1 className="text-2xl font-medium text-white">{campaign.name || "Untitled campaign"}</h1>
+            <h1 className="text-2xl font-medium text-neutral-900 dark:text-white">{campaign.name || "Untitled campaign"}</h1>
             <Badge status={campaign.status} />
           </div>
         </div>
@@ -132,7 +149,7 @@ function CampaignDetailContent() {
             value={campaign.status}
             disabled={statusSaving}
             onChange={(e) => handleStatusChange(e.target.value as CampaignStatus)}
-            className="rounded-xl border border-white/10 bg-white/5 px-3 py-1.5 text-sm capitalize text-neutral-100 outline-none transition-colors focus:border-electric-blue disabled:opacity-50"
+            className="rounded-xl border border-neutral-200 bg-white px-3 py-1.5 text-sm capitalize text-neutral-900 outline-none transition-colors focus:border-electric-blue disabled:opacity-50 dark:border-white/10 dark:bg-white/5 dark:text-neutral-100"
           >
             {STATUS_OPTIONS.map((s) => (
               <option key={s} value={s}>
@@ -179,16 +196,16 @@ function CampaignDetailContent() {
           ) : (
             <dl className="flex flex-col gap-2 text-sm">
               <div className="flex justify-between">
-                <dt className="text-neutral-500">Budget</dt>
-                <dd>${campaign.budget.toFixed(2)}</dd>
+                <dt className="text-neutral-500 dark:text-neutral-400">Budget</dt>
+                <dd className="text-neutral-900 dark:text-white">${campaign.budget.toFixed(2)}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-neutral-500">Spent</dt>
-                <dd>${campaign.spent.toFixed(2)}</dd>
+                <dt className="text-neutral-500 dark:text-neutral-400">Spent</dt>
+                <dd className="text-neutral-900 dark:text-white">${campaign.spent.toFixed(2)}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-neutral-500">Created</dt>
-                <dd>{new Date(campaign.createdAt).toLocaleString()}</dd>
+                <dt className="text-neutral-500 dark:text-neutral-400">Created</dt>
+                <dd className="text-neutral-900 dark:text-white">{new Date(campaign.createdAt).toLocaleString()}</dd>
               </div>
             </dl>
           )}
@@ -205,20 +222,20 @@ function CampaignDetailContent() {
       {analytics && (
         <div className="stagger grid grid-cols-2 gap-4 sm:grid-cols-4">
           <Card>
-            <p className="text-sm text-neutral-500">Total views</p>
-            <p className="mt-2 font-mono text-2xl text-white">{analytics.totalViews.toLocaleString()}</p>
+            <p className="text-sm text-neutral-500 dark:text-neutral-400">Total views</p>
+            <p className="mt-2 font-mono text-2xl text-neutral-900 dark:text-white">{analytics.totalViews.toLocaleString()}</p>
           </Card>
           <Card>
-            <p className="text-sm text-neutral-500">Total ads</p>
-            <p className="mt-2 font-mono text-2xl text-white">{analytics.totalAds}</p>
+            <p className="text-sm text-neutral-500 dark:text-neutral-400">Total ads</p>
+            <p className="mt-2 font-mono text-2xl text-neutral-900 dark:text-white">{analytics.totalAds}</p>
           </Card>
           <Card>
-            <p className="text-sm text-neutral-500">Spent</p>
-            <p className="mt-2 font-mono text-2xl text-white">${analytics.spent.toFixed(2)}</p>
+            <p className="text-sm text-neutral-500 dark:text-neutral-400">Spent</p>
+            <p className="mt-2 font-mono text-2xl text-neutral-900 dark:text-white">${analytics.spent.toFixed(2)}</p>
           </Card>
           <Card>
-            <p className="text-sm text-neutral-500">Budget</p>
-            <p className="mt-2 font-mono text-2xl text-white">${analytics.budget.toFixed(2)}</p>
+            <p className="text-sm text-neutral-500 dark:text-neutral-400">Budget</p>
+            <p className="mt-2 font-mono text-2xl text-neutral-900 dark:text-white">${analytics.budget.toFixed(2)}</p>
           </Card>
         </div>
       )}
@@ -236,7 +253,7 @@ function CampaignDetailContent() {
                 className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-all duration-200 ${
                   days === d
                     ? "bg-gradient-brand text-white shadow-glow-blue"
-                    : "text-white/50 hover:bg-white/5 hover:text-white/70"
+                    : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 dark:text-white/50 dark:hover:bg-white/5 dark:hover:text-white/70"
                 }`}
               >
                 {d}d
@@ -245,7 +262,7 @@ function CampaignDetailContent() {
           </div>
         </div>
         {timeseries.length === 0 ? (
-          <p className="text-sm text-neutral-500">No views recorded in this period.</p>
+          <p className="text-sm text-neutral-500 dark:text-neutral-400">No views recorded in this period.</p>
         ) : (
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">

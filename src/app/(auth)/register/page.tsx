@@ -42,13 +42,13 @@ export default function RegisterPage() {
       <div className="relative z-10 w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center animate-fade-up">
           <CrystalLogo size={72} />
-          <h1 className="mt-4 text-3xl font-medium text-white">
+          <h1 className="mt-4 text-3xl font-medium text-neutral-900 dark:text-white">
             Better<span className="text-gradient">Ads</span>
           </h1>
         </div>
         <div className="glass rounded-3xl p-8 animate-fade-up" style={{ animationDelay: "0.1s" }}>
-        <h2 className="mb-1 text-2xl font-medium text-white">Create Account</h2>
-        <p className="mb-6 text-sm text-white/50">Start creating intelligent ads today.</p>
+        <h2 className="mb-1 text-2xl font-medium text-neutral-900 dark:text-white">Create Account</h2>
+        <p className="mb-6 text-sm text-neutral-500 dark:text-white/50">Start creating intelligent ads today.</p>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <Input
             label="Email"
@@ -68,13 +68,13 @@ export default function RegisterPage() {
             autoComplete="new-password"
           />
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-white/70">
+            <label className="text-sm font-medium text-neutral-600 dark:text-white/70">
               Role
             </label>
             <select
               value={role}
               onChange={(e) => setRole(e.target.value as Role)}
-              className="rounded-xl border border-white/10 bg-white/5 px-3.5 py-2.5 text-sm text-neutral-100 outline-none focus:border-electric-blue focus:shadow-glow-blue transition-all duration-200"
+              className="rounded-xl border border-neutral-200 bg-white px-3.5 py-2.5 text-sm text-neutral-900 outline-none focus:border-electric-blue focus:shadow-glow-blue transition-all duration-200 dark:border-white/10 dark:bg-white/5 dark:text-neutral-100"
             >
               {ROLES.map((r) => (
                 <option key={r} value={r}>
@@ -88,7 +88,7 @@ export default function RegisterPage() {
             Create account
           </Button>
         </form>
-        <div className="mt-5 text-center text-sm text-white/50">
+        <div className="mt-5 text-center text-sm text-neutral-500 dark:text-white/50">
           Already have an account?{" "}
           <Link href="/login" className="font-medium text-electric-blue transition-colors hover:text-neon-cyan">
             Sign in

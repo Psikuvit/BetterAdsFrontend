@@ -9,7 +9,7 @@ export function Card({
   const padding = /(^|\s)p-\d/.test(className) ? "" : "p-5";
   return (
     <div
-      className={`glass rounded-2xl ${padding} transition-all duration-300 ease-smooth hover:glass-hover animate-fade-up ${className}`}
+      className={`glass rounded-2xl ${padding} transition-all duration-300 ease-smooth hover:shadow-lg hover:shadow-black/5 dark:hover:shadow-white/5 animate-fade-up ${className}`}
     >
       {children}
     </div>

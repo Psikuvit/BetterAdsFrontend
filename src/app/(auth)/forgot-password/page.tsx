@@ -35,17 +35,17 @@ export default function ForgotPasswordPage() {
       <div className="relative z-10 w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center animate-fade-up">
           <CrystalLogo size={72} />
-          <h1 className="mt-4 text-3xl font-medium text-white">
+          <h1 className="mt-4 text-3xl font-medium text-neutral-900 dark:text-white">
             Better<span className="text-gradient">Ads</span>
           </h1>
         </div>
         <div className="glass rounded-3xl p-8 animate-fade-up" style={{ animationDelay: "0.1s" }}>
-        <h2 className="mb-1 text-2xl font-medium text-white">Reset Password</h2>
-        <p className="mb-6 text-sm text-white/50">
+        <h2 className="mb-1 text-2xl font-medium text-neutral-900 dark:text-white">Reset Password</h2>
+        <p className="mb-6 text-sm text-neutral-500 dark:text-white/50">
           Enter your account email and we&apos;ll send a reset link if it exists.
         </p>
         {submitted ? (
-          <p className="text-sm text-white/70">
+          <p className="text-sm text-neutral-600 dark:text-white/70">
             If that email exists, a reset link has been sent.
           </p>
         ) : (
@@ -64,7 +64,7 @@ export default function ForgotPasswordPage() {
             </Button>
           </form>
         )}
-        <div className="mt-5 text-center text-sm text-white/50">
+        <div className="mt-5 text-center text-sm text-neutral-500 dark:text-white/50">
           <Link href="/login" className="text-electric-blue transition-colors hover:text-neon-cyan">
             Back to sign in
           </Link>
