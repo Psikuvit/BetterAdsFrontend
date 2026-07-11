@@ -51,6 +51,7 @@ function ResetPasswordForm() {
       ) : (
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <Input
+            id="reset-password-new-password"
             label="New password"
             type="password"
             required

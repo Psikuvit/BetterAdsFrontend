@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { Spinner } from "@/components/ui/Spinner";
+import { FullScreenLoader } from "@/components/ui/FullScreenLoader";
 
 export default function Home() {
   const { user, role, loading } = useAuth();
@@ -25,9 +25,8 @@ export default function Home() {
   }, [loading, user, role, router]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center gap-2 text-sm text-muted-foreground">
-      <Spinner />
-      Loading...
+    <div className="flex min-h-screen items-center justify-center">
+      <FullScreenLoader />
     </div>
   );
 }
