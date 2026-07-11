@@ -2,11 +2,12 @@
 
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { RequireAuth } from "@/components/RequireAuth";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
 import { errorMessage } from "@/lib/errors";
 import * as adsApi from "@/lib/api/ads";
@@ -129,13 +130,17 @@ function AdDetailContent() {
   const params = useParams<{ id: string }>();
   const adId = Number(params.id);
   const searchParams = useSearchParams();
+  const router = useRouter();
   const campaignId = searchParams.get("campaignId");
   const { showToast } = useToast();
+  const { role } = useAuth();
+  const isAdmin = role === "ADMIN";
 
   const [validation, setValidation] = useState<AdValidation | null>(null);
   const [embed, setEmbed] = useState<EmbedLink | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [acting, setActing] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const loadValidation = useCallback(() => {
@@ -209,6 +214,36 @@ function AdDetailContent() {
     }
   }
 
+  const CAN_REJECT = new Set<AdStatus>(["PENDING", "VALIDATING", "AWAITING_FEATURES", "FLAGGED", "PROCESSING"]);
+  const CAN_DELETE = new Set<AdStatus>(["PENDING", "VALIDATING", "AWAITING_FEATURES", "FLAGGED", "REJECTED", "FAILED"]);
+
+  async function handleReject() {
+    setActing(true);
+    try {
+      await adsApi.reviewAd(adId, "reject");
+      setValidation((v) => v ? { ...v, status: "REJECTED", inHumanReview: false } : v);
+      showToast("Ad rejected", "success");
+    } catch (err) {
+      showToast(errorMessage(err), "error");
+    } finally {
+      setActing(false);
+    }
+  }
+
+  async function handleDelete() {
+    if (!confirm("Delete this ad permanently?")) return;
+    setActing(true);
+    try {
+      await adsApi.deleteAd(adId);
+      showToast("Ad deleted", "success");
+      router.push(campaignId ? `/campaigns/${campaignId}/ads` : "/admin/ads");
+    } catch (err) {
+      showToast(errorMessage(err), "error");
+    } finally {
+      setActing(false);
+    }
+  }
+
   if (loading) return <p className="text-sm text-neutral-500">Loading ad...</p>;
   if (error) return <p className="text-sm text-red-600">{error}</p>;
   if (!validation) return null;
@@ -238,6 +273,32 @@ function AdDetailContent() {
           <p className="mt-2 text-sm text-amber-600">
             An admin needs to approve or reject this ad before it can go live.
           </p>
+        )}
+
+        {isAdmin && (
+          <div className="mt-4 flex gap-2">
+            {validation.status === "FLAGGED" && (
+              <Button loading={acting} onClick={() => {
+                setActing(true);
+                adsApi.reviewAd(adId, "approve").then(() => {
+                  setValidation((v) => v ? { ...v, status: "AWAITING_FEATURES", inHumanReview: false } : v);
+                  showToast("Ad approved", "success");
+                }).catch((err) => showToast(errorMessage(err), "error")).finally(() => setActing(false));
+              }}>
+                Approve
+              </Button>
+            )}
+            {CAN_REJECT.has(validation.status) && (
+              <Button variant="secondary" loading={acting} onClick={handleReject}>
+                Reject
+              </Button>
+            )}
+            {CAN_DELETE.has(validation.status) && (
+              <Button variant="danger" loading={acting} onClick={handleDelete}>
+                Delete
+              </Button>
+            )}
+          </div>
         )}
 
         {WAITING_STATUSES.includes(validation.status) && <ValidationTimer />}
