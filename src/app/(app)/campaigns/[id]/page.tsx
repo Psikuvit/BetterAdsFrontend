@@ -14,9 +14,10 @@ import {
 } from "recharts";
 import { RequireAuth } from "@/components/RequireAuth";
 import { Card } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { FundCampaignPanel } from "@/components/FundCampaignPanel";
 import { useToast } from "@/context/ToastContext";
 import { errorMessage } from "@/lib/errors";
@@ -147,40 +148,35 @@ function CampaignDetailContent() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <Link
-            href="/campaigns"
-            className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100"
-          >
-            ← Back to campaigns
-          </Link>
-          <div className="mt-1 flex items-center gap-3">
-            <h1 className="text-2xl font-medium text-neutral-900 dark:text-white">{campaign.name || "Untitled campaign"}</h1>
-            <Badge status={campaign.status} />
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <select
-            value={campaign.status}
-            disabled={statusSaving}
-            onChange={(e) => handleStatusChange(e.target.value as CampaignStatus)}
-            className="rounded-xl border border-neutral-200 bg-white px-3 py-1.5 text-sm capitalize text-neutral-900 outline-none transition-colors focus:border-electric-blue disabled:opacity-50 dark:border-white/10 dark:bg-white/5 dark:text-neutral-100"
-          >
-            {STATUS_OPTIONS.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
-          <Link href={`/campaigns/${campaignId}/ads`}>
-            <Button variant="secondary">Ads</Button>
-          </Link>
-          <Link href={`/campaigns/${campaignId}/upload`}>
-            <Button variant="secondary">Upload ad</Button>
-          </Link>
-        </div>
-      </div>
+      <PageHeader
+        title={campaign.name || "Untitled campaign"}
+        status={campaign.status}
+        backHref="/campaigns"
+        backLabel="Back to campaigns"
+        actions={
+          <>
+            <select
+              aria-label="Campaign status"
+              value={campaign.status}
+              disabled={statusSaving}
+              onChange={(e) => handleStatusChange(e.target.value as CampaignStatus)}
+              className="rounded-xl border border-neutral-200 bg-white px-3 py-1.5 text-sm capitalize text-neutral-900 outline-none transition-colors focus:border-electric-blue disabled:opacity-50 dark:border-white/10 dark:bg-white/5 dark:text-neutral-100"
+            >
+              {STATUS_OPTIONS.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+            <Link href={`/campaigns/${campaignId}/ads`}>
+              <Button variant="secondary">Ads</Button>
+            </Link>
+            <Link href={`/campaigns/${campaignId}/upload`}>
+              <Button variant="secondary">Upload ad</Button>
+            </Link>
+          </>
+        }
+      />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
@@ -195,8 +191,9 @@ function CampaignDetailContent() {
           </div>
           {editing ? (
             <form onSubmit={handleSave} className="flex flex-col gap-4">
-              <Input label="Name" value={name} onChange={(e) => setName(e.target.value)} />
+              <Input id="edit-campaign-name" label="Name" value={name} onChange={(e) => setName(e.target.value)} />
               <Input
+                id="edit-campaign-budget"
                 label="Budget"
                 type="number"
                 min="0"
@@ -307,21 +304,12 @@ function CampaignDetailContent() {
           <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
             Views over time
           </p>
-          <div className="flex gap-1">
-            {[7, 30].map((d) => (
-              <button
-                key={d}
-                onClick={() => setDays(d)}
-                className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-all duration-200 ${
-                  days === d
-                    ? "bg-gradient-brand text-white shadow-glow-blue"
-                    : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 dark:text-white/50 dark:hover:bg-white/5 dark:hover:text-white/70"
-                }`}
-              >
-                {d}d
-              </button>
-            ))}
-          </div>
+          <SegmentedControl
+            aria-label="Time range"
+            value={String(days)}
+            onChange={(v) => setDays(Number(v))}
+            options={[7, 30].map((d) => ({ value: String(d), label: `${d}d` }))}
+          />
         </div>
         {timeseries.length === 0 ? (
           <p className="text-sm text-neutral-500 dark:text-neutral-400">No views recorded in this period.</p>

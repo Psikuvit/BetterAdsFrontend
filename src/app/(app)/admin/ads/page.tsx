@@ -2,10 +2,15 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { Trash2, X } from "lucide-react";
 import { RequireAuth } from "@/components/RequireAuth";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { Table, THead, TBody, Tr, Th, Td } from "@/components/ui/Table";
 import { TableSkeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/EmptyState";
 import { useToast } from "@/context/ToastContext";
@@ -28,6 +33,7 @@ function AdminAllAdsContent() {
   const [error, setError] = useState("");
   const [filter, setFilter] = useState<string>("ALL");
   const [actingId, setActingId] = useState<number | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -82,7 +88,7 @@ function AdminAllAdsContent() {
   }
 
   async function handleDelete(adId: number) {
-    if (!confirm("Delete this ad permanently?")) return;
+    setDeleteTarget(null);
     setActingId(adId);
     try {
       await adsApi.deleteAd(adId);
@@ -103,28 +109,24 @@ function AdminAllAdsContent() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-medium text-neutral-900 dark:text-white">All Ads</h1>
-        <Link href="/admin">
-          <Button variant="secondary">Back to dashboard</Button>
-        </Link>
-      </div>
+      <PageHeader
+        title="All Ads"
+        actions={
+          <Link href="/admin">
+            <Button variant="secondary">Back to dashboard</Button>
+          </Link>
+        }
+      />
 
-      <div className="flex flex-wrap gap-2">
-        {statuses.map((s) => (
-          <button
-            key={s}
-            onClick={() => setFilter(s)}
-            className={`rounded-full px-3 py-1 text-xs font-medium transition-all duration-200 ${
-              filter === s
-                ? "bg-gradient-brand text-white shadow-glow-blue"
-                : "border border-neutral-200 bg-neutral-100 text-neutral-500 hover:bg-neutral-200 hover:text-neutral-700 dark:border-white/10 dark:bg-white/5 dark:text-white/50 dark:hover:bg-white/10 dark:hover:text-white/70"
-            }`}
-          >
-            {s === "ALL" ? `All (${ads.length})` : `${s} (${ads.filter((a) => a.status === s).length})`}
-          </button>
-        ))}
-      </div>
+      <SegmentedControl
+        aria-label="Filter ads by status"
+        value={filter}
+        onChange={setFilter}
+        options={statuses.map((s) => ({
+          value: s,
+          label: s === "ALL" ? `All (${ads.length})` : `${s} (${ads.filter((a) => a.status === s).length})`,
+        }))}
+      />
 
       {filtered.length === 0 ? (
         <Card className="p-0">
@@ -136,40 +138,33 @@ function AdminAllAdsContent() {
         </Card>
       ) : (
         <Card className="p-0">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-neutral-200 text-left text-neutral-500 dark:border-neutral-800">
-                <th className="px-4 py-3 font-medium">Title</th>
-                <th className="px-4 py-3 font-medium">Campaign</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Locale</th>
-                <th className="px-4 py-3 font-medium">Created</th>
-                <th className="px-4 py-3 font-medium">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <THead>
+              <Th>Title</Th>
+              <Th>Campaign</Th>
+              <Th>Status</Th>
+              <Th>Locale</Th>
+              <Th>Created</Th>
+              <Th>Actions</Th>
+            </THead>
+            <TBody>
               {filtered.map((ad) => (
-                <tr
-                  key={ad.id}
-                  className="border-b border-neutral-100 transition-colors last:border-0 hover:bg-neutral-50 dark:border-white/5 dark:hover:bg-white/[0.04]"
-                >
-                  <td className="px-4 py-3 font-medium text-neutral-900 dark:text-white">{ad.title || "Untitled"}</td>
-                  <td className="px-4 py-3">
+                <Tr key={ad.id}>
+                  <Td className="font-medium text-neutral-900 dark:text-white">{ad.title || "Untitled"}</Td>
+                  <Td>
                     <Link
                       href={`/campaigns/${ad.campaignId}`}
                       className="text-neutral-500 transition-colors hover:text-electric-blue hover:underline"
                     >
                       {ad.campaignName}
                     </Link>
-                  </td>
-                  <td className="px-4 py-3">
+                  </Td>
+                  <Td>
                     <Badge status={ad.status} />
-                  </td>
-                  <td className="px-4 py-3 text-neutral-500">{ad.targetLocale || "\u2014"}</td>
-                  <td className="px-4 py-3 text-neutral-500">
-                    {new Date(ad.createdAt).toLocaleDateString()}
-                  </td>
-                  <td className="px-4 py-3">
+                  </Td>
+                  <Td className="text-neutral-500">{ad.targetLocale || "—"}</Td>
+                  <Td className="text-neutral-500">{new Date(ad.createdAt).toLocaleDateString()}</Td>
+                  <Td>
                     <div className="flex gap-2">
                       <Link href={`/campaigns/${ad.campaignId}/ads`}>
                         <Button variant="secondary" className="px-2.5 py-1 text-xs">
@@ -183,6 +178,7 @@ function AdminAllAdsContent() {
                           loading={actingId === ad.id}
                           onClick={() => handleReject(ad.id)}
                         >
+                          <X className="h-3 w-3" />
                           Reject
                         </Button>
                       )}
@@ -191,19 +187,31 @@ function AdminAllAdsContent() {
                           variant="danger"
                           className="px-2.5 py-1 text-xs"
                           loading={actingId === ad.id}
-                          onClick={() => handleDelete(ad.id)}
+                          onClick={() => setDeleteTarget(ad.id)}
                         >
+                          <Trash2 className="h-3 w-3" />
                           Delete
                         </Button>
                       )}
                     </div>
-                  </td>
-                </tr>
+                  </Td>
+                </Tr>
               ))}
-            </tbody>
-          </table>
+            </TBody>
+          </Table>
         </Card>
       )}
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        title="Delete this ad?"
+        description="This will permanently delete the ad. This action can't be undone."
+        confirmLabel="Delete"
+        danger
+        loading={actingId !== null}
+        onConfirm={() => deleteTarget !== null && handleDelete(deleteTarget)}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }

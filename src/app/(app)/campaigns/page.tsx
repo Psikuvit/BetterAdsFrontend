@@ -3,11 +3,13 @@
 import { Suspense, SubmitEvent, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { Plus } from "lucide-react";
 import { RequireAuth } from "@/components/RequireAuth";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { Table, THead, TBody, Tr, Th, Td } from "@/components/ui/Table";
 import { TableSkeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/EmptyState";
 import { useAuth } from "@/context/AuthContext";
@@ -76,6 +78,7 @@ function CampaignsContent() {
         <h1 className="text-2xl font-medium text-neutral-900 dark:text-white">Campaigns</h1>
         {canCreate && (
           <Button onClick={() => setShowForm((s) => !s)} variant={showForm ? "secondary" : "primary"}>
+            {!showForm && <Plus className="h-3.5 w-3.5" />}
             {showForm ? "Cancel" : "New campaign"}
           </Button>
         )}
@@ -86,6 +89,7 @@ function CampaignsContent() {
           <form onSubmit={handleCreate} className="flex flex-col gap-4 sm:flex-row sm:items-end">
             <div className="flex-1">
               <Input
+                id="campaign-name"
                 label="Name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -94,6 +98,7 @@ function CampaignsContent() {
             </div>
             <div className="flex-1">
               <Input
+                id="campaign-budget"
                 label="Budget"
                 type="number"
                 min="0"
@@ -125,37 +130,30 @@ function CampaignsContent() {
         </Card>
       ) : (
         <Card className="p-0">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-neutral-200 text-left text-neutral-500 dark:border-neutral-800">
-                <th className="px-4 py-3 font-medium">Name</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Budget</th>
-                <th className="px-4 py-3 font-medium">Spent</th>
-                <th className="px-4 py-3 font-medium">Created</th>
-                <th className="px-4 py-3 font-medium">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <THead>
+              <Th>Name</Th>
+              <Th>Status</Th>
+              <Th>Budget</Th>
+              <Th>Spent</Th>
+              <Th>Created</Th>
+              <Th>Actions</Th>
+            </THead>
+            <TBody>
               {campaigns.map((c) => (
-                <tr
-                  key={c.id}
-                  className="border-b border-neutral-100 transition-colors last:border-0 hover:bg-neutral-50 dark:border-white/5 dark:hover:bg-white/[0.04]"
-                >
-                  <td className="px-4 py-3">
+                <Tr key={c.id}>
+                  <Td>
                     <Link href={`/campaigns/${c.id}`} className="font-medium text-neutral-900 hover:underline dark:text-white">
                       {c.name || "Untitled campaign"}
                     </Link>
-                  </td>
-                  <td className="px-4 py-3">
+                  </Td>
+                  <Td>
                     <Badge status={c.status} />
-                  </td>
-                  <td className="px-4 py-3 text-neutral-700 dark:text-neutral-100">${c.budget.toFixed(2)}</td>
-                  <td className="px-4 py-3 text-neutral-700 dark:text-neutral-100">${c.spent.toFixed(2)}</td>
-                  <td className="px-4 py-3 text-neutral-500">
-                    {new Date(c.createdAt).toLocaleDateString()}
-                  </td>
-                  <td className="px-4 py-3">
+                  </Td>
+                  <Td className="text-neutral-700 dark:text-neutral-100">${c.budget.toFixed(2)}</Td>
+                  <Td className="text-neutral-700 dark:text-neutral-100">${c.spent.toFixed(2)}</Td>
+                  <Td className="text-neutral-500">{new Date(c.createdAt).toLocaleDateString()}</Td>
+                  <Td>
                     <div className="flex gap-2">
                       <Link href={`/campaigns/${c.id}`}>
                         <Button variant="secondary" className="px-2.5 py-1 text-xs">
@@ -168,11 +166,11 @@ function CampaignsContent() {
                         </Button>
                       </Link>
                     </div>
-                  </td>
-                </tr>
+                  </Td>
+                </Tr>
               ))}
-            </tbody>
-          </table>
+            </TBody>
+          </Table>
         </Card>
       )}
 

@@ -70,7 +70,7 @@ function CardPaymentForm({
 
   return (
     <form onSubmit={handlePay} className="flex flex-col gap-4">
-      <div className="rounded-md border border-neutral-300 px-3 py-2.5 dark:border-neutral-700">
+      <div className="rounded-xl border border-neutral-200 bg-white px-3.5 py-2.5 transition-all duration-200 focus-within:border-electric-blue focus-within:shadow-glow-blue dark:border-white/10 dark:bg-white/5">
         <CardElement
           options={{
             style: {
@@ -138,6 +138,7 @@ export function FundCampaignPanel({
     <form onSubmit={handleStart} className="flex flex-col gap-4 sm:flex-row sm:items-end">
       <div className="flex-1">
         <Input
+          id="fund-amount"
           label="Amount (USD)"
           type="number"
           min="0.01"

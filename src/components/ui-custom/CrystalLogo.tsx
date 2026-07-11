@@ -1,5 +1,3 @@
-"use client";
-
 export default function CrystalLogo({ size = 80 }: { size?: number }) {
   return (
     <div className="animate-float animate-glow-pulse">
@@ -26,10 +24,7 @@ export default function CrystalLogo({ size = 80 }: { size?: number }) {
           </linearGradient>
         </defs>
 
-        {/* Body */}
         <polygon points="50,4 88,28 88,72 50,96 12,72 12,28" fill="url(#crystal-a)" opacity="0.35" />
-
-        {/* Facets */}
         <polygon points="50,4 88,28 50,50" fill="url(#crystal-b)" opacity="0.9" />
         <polygon points="50,4 12,28 50,50" fill="url(#crystal-b)" opacity="0.55" />
         <polygon points="88,28 88,72 50,50" fill="url(#crystal-a)" opacity="0.7" />
@@ -37,7 +32,6 @@ export default function CrystalLogo({ size = 80 }: { size?: number }) {
         <polygon points="88,72 50,96 50,50" fill="url(#crystal-c)" opacity="0.8" />
         <polygon points="12,72 50,96 50,50" fill="url(#crystal-c)" opacity="0.5" />
 
-        {/* Edges */}
         <polygon
           points="50,4 88,28 88,72 50,96 12,72 12,28"
           stroke="rgba(255,255,255,0.35)"
@@ -50,7 +44,6 @@ export default function CrystalLogo({ size = 80 }: { size?: number }) {
           strokeWidth="0.75"
         />
 
-        {/* Highlight */}
         <polygon points="50,4 88,28 50,50" fill="white" opacity="0.12" />
       </svg>
     </div>
