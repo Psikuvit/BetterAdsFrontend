@@ -7,13 +7,19 @@ import { RequireAuth } from "@/components/RequireAuth";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/context/ToastContext";
 import { errorMessage } from "@/lib/errors";
 import * as campaignsApi from "@/lib/api/campaigns";
+import * as adsApi from "@/lib/api/ads";
 import { Ad, AdAnalyticsRow } from "@/lib/types";
 
 function CampaignAdsContent() {
   const params = useParams<{ id: string }>();
   const campaignId = Number(params.id);
+  const { role } = useAuth();
+  const isAdmin = role === "ADMIN";
+  const { showToast } = useToast();
 
   const [ads, setAds] = useState<Ad[]>([]);
   const [viewsByAdId, setViewsByAdId] = useState<Record<number, number>>({});
@@ -21,6 +27,7 @@ function CampaignAdsContent() {
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const load = useCallback(
     (pageToLoad: number) => {
@@ -49,6 +56,20 @@ function CampaignAdsContent() {
   useEffect(() => {
     load(0);
   }, [load]);
+
+  async function handleDelete(adId: number) {
+    if (!confirm("Delete this ad permanently?")) return;
+    setDeletingId(adId);
+    try {
+      await adsApi.deleteAd(adId);
+      setAds((prev) => prev.filter((a) => a.id !== adId));
+      showToast("Ad deleted", "success");
+    } catch (err) {
+      showToast(errorMessage(err), "error");
+    } finally {
+      setDeletingId(null);
+    }
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -111,11 +132,23 @@ function CampaignAdsContent() {
                     {new Date(ad.createdAt).toLocaleDateString()}
                   </td>
                   <td className="px-4 py-3">
-                    <Link href={`/ads/${ad.id}?campaignId=${campaignId}`}>
-                      <Button variant="secondary" className="px-2.5 py-1 text-xs">
-                        View
-                      </Button>
-                    </Link>
+                    <div className="flex gap-1.5">
+                      <Link href={`/ads/${ad.id}?campaignId=${campaignId}`}>
+                        <Button variant="secondary" className="px-2.5 py-1 text-xs">
+                          View
+                        </Button>
+                      </Link>
+                      {isAdmin && (
+                        <Button
+                          variant="danger"
+                          className="px-2.5 py-1 text-xs"
+                          loading={deletingId === ad.id}
+                          onClick={() => handleDelete(ad.id)}
+                        >
+                          Delete
+                        </Button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
