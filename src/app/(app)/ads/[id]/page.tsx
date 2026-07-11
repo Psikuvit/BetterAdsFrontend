@@ -26,10 +26,7 @@ const STATUS_NOTES: Record<AdStatus, string> = {
 };
 
 const LOCALE_OPTIONS = [
-  { code: "en", label: "English" },
-  { code: "es", label: "Spanish" },
   { code: "fr", label: "French" },
-  { code: "de", label: "German" },
 ];
 
 const WAITING_STATUSES: AdStatus[] = ["PENDING", "VALIDATING"];
@@ -66,7 +63,7 @@ function ProcessingSpinner() {
 }
 
 function FeatureSelectionForm({ adId, onSubmitted }: { adId: number; onSubmitted: () => void }) {
-  const [selected, setSelected] = useState<string[]>(["en"]);
+  const [selected, setSelected] = useState<string[]>(["fr"]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -119,9 +116,28 @@ function FeatureSelectionForm({ adId, onSubmitted }: { adId: number; onSubmitted
         })}
       </div>
       {error && <p className="text-sm text-red-600">{error}</p>}
-      <Button onClick={handleSubmit} loading={submitting} className="self-start">
-        Generate
-      </Button>
+      <div className="flex gap-2">
+        <Button onClick={handleSubmit} loading={submitting} className="self-start">
+          Generate
+        </Button>
+        <Button
+          variant="secondary"
+          loading={submitting}
+          onClick={async () => {
+            setSubmitting(true);
+            try {
+              await adsApi.selectFeatures(adId, []);
+              onSubmitted();
+            } catch (err) {
+              setError(errorMessage(err));
+            } finally {
+              setSubmitting(false);
+            }
+          }}
+        >
+          Skip translation
+        </Button>
+      </div>
     </div>
   );
 }
