@@ -117,10 +117,10 @@ function ReviewQueueContent() {
                   {campaignName} · Ad #{ad.id} · {ad.targetLocale}
                 </p>
                 <Link
-                  href={`/ads/${ad.id}?campaignId=${ad.campaignId}`}
+                  href={`/campaigns/${ad.campaignId}/ads`}
                   className="text-sm text-neutral-500 underline hover:text-neutral-900 dark:hover:text-neutral-100"
                 >
-                  View ad
+                  View campaign ads
                 </Link>
               </div>
               <div className="flex gap-2">

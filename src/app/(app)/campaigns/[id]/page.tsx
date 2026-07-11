@@ -21,7 +21,7 @@ import { FundCampaignPanel } from "@/components/FundCampaignPanel";
 import { useToast } from "@/context/ToastContext";
 import { errorMessage } from "@/lib/errors";
 import * as campaignsApi from "@/lib/api/campaigns";
-import { Campaign, CampaignAnalytics, CampaignStatus, CampaignTimeseriesPoint } from "@/lib/types";
+import { Campaign, CampaignAnalytics, CampaignEmbed, CampaignStatus, CampaignTimeseriesPoint } from "@/lib/types";
 
 const STATUS_OPTIONS: CampaignStatus[] = ["DRAFT", "ACTIVE", "PAUSED", "COMPLETED", "ARCHIVED"];
 
@@ -33,6 +33,7 @@ function CampaignDetailContent() {
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [analytics, setAnalytics] = useState<CampaignAnalytics | null>(null);
   const [timeseries, setTimeseries] = useState<CampaignTimeseriesPoint[]>([]);
+  const [embed, setEmbed] = useState<CampaignEmbed | null>(null);
   const [days, setDays] = useState(7);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -61,9 +62,14 @@ function CampaignDetailContent() {
     [campaignId]
   );
 
+  const loadEmbed = useCallback(() => {
+    campaignsApi.getCampaignEmbed(campaignId).then(setEmbed).catch(() => {});
+  }, [campaignId]);
+
   useEffect(() => {
     setLoading(true);
     Promise.all([loadCampaign(), loadAnalytics(), loadTimeseries(days)])
+      .then(() => loadEmbed())
       .catch((err) => setError(errorMessage(err)))
       .finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -106,6 +112,16 @@ function CampaignDetailContent() {
   function refreshAll() {
     loadCampaign();
     loadAnalytics();
+    loadEmbed();
+  }
+
+  async function copy(text: string, label: string) {
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast(`${label} copied`, "success");
+    } catch {
+      showToast("Couldn't copy to clipboard", "error");
+    }
   }
 
   if (loading) {
@@ -218,6 +234,52 @@ function CampaignDetailContent() {
           <FundCampaignPanel campaignId={campaignId} onFunded={refreshAll} />
         </Card>
       </div>
+
+      {embed?.available && (
+        <Card>
+          <p className="mb-3 text-sm font-medium text-neutral-700 dark:text-neutral-300">
+            Embed
+          </p>
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-2">
+              <code className="flex-1 truncate rounded-md bg-neutral-100 px-3 py-2 text-xs dark:bg-neutral-800">
+                {embed.embedUrl}
+              </code>
+              <Button variant="secondary" onClick={() => copy(embed.embedUrl!, "Embed URL")}>
+                Copy
+              </Button>
+            </div>
+            <div className="flex items-start gap-2">
+              <pre className="flex-1 overflow-x-auto rounded-md bg-neutral-100 px-3 py-2 text-xs dark:bg-neutral-800">
+                {embed.embedSnippet}
+              </pre>
+              <Button variant="secondary" onClick={() => copy(embed.embedSnippet!, "Embed snippet")}>
+                Copy
+              </Button>
+            </div>
+            <div className="overflow-hidden rounded-md border border-neutral-200 dark:border-neutral-800">
+              <iframe
+                src={embed.embedUrl}
+                width="100%"
+                height={360}
+                frameBorder={0}
+                allow="autoplay; fullscreen"
+                onLoad={(e) => {
+                  const iframe = e.currentTarget;
+                  function onMsg(ev: MessageEvent) {
+                    if (ev.data?.type === "ad-resize" && ev.data.width && ev.data.height) {
+                      const ratio = ev.data.height / ev.data.width;
+                      iframe.style.height = `${iframe.clientWidth * ratio}px`;
+                    }
+                  }
+                  window.addEventListener("message", onMsg);
+                  iframe.addEventListener("remove", () => window.removeEventListener("message", onMsg));
+                }}
+              />
+            </div>
+          </div>
+        </Card>
+      )}
 
       {analytics && (
         <div className="stagger grid grid-cols-2 gap-4 sm:grid-cols-4">

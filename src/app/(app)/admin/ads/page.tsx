@@ -171,9 +171,9 @@ function AdminAllAdsContent() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
-                      <Link href={`/ads/${ad.id}?campaignId=${ad.campaignId}`}>
+                      <Link href={`/campaigns/${ad.campaignId}/ads`}>
                         <Button variant="secondary" className="px-2.5 py-1 text-xs">
-                          View
+                          Campaign
                         </Button>
                       </Link>
                       {CAN_REJECT.has(ad.status) && ad.status !== "REJECTED" && (
