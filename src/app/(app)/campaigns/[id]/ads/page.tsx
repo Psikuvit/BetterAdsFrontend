@@ -7,7 +7,6 @@ import { RequireAuth } from "@/components/RequireAuth";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
 import { TableSkeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/EmptyState";
@@ -92,8 +91,6 @@ function FeaturePicker({ adId, onDone }: { adId: number; onDone: () => void }) {
 function CampaignAdsContent() {
   const params = useParams<{ id: string }>();
   const campaignId = Number(params.id);
-  const { role } = useAuth();
-  const isAdmin = role === "ADMIN";
   const { showToast } = useToast();
 
   const [ads, setAds] = useState<Ad[]>([]);
@@ -211,16 +208,14 @@ function CampaignAdsContent() {
                       <FeaturePicker adId={ad.id} onDone={() => load(page)} />
                     ) : (
                       <div className="flex gap-1.5">
-                        {isAdmin && (
-                          <Button
-                            variant="danger"
-                            className="px-2.5 py-1 text-xs"
-                            loading={deletingId === ad.id}
-                            onClick={() => handleDelete(ad.id)}
-                          >
-                            Delete
-                          </Button>
-                        )}
+                        <Button
+                          variant="danger"
+                          className="px-2.5 py-1 text-xs"
+                          loading={deletingId === ad.id}
+                          onClick={() => handleDelete(ad.id)}
+                        >
+                          Delete
+                        </Button>
                       </div>
                     )}
                   </td>
