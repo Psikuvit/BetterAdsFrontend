@@ -1,12 +1,14 @@
 "use client";
 
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
+import { Check, Copy, Trash2, X } from "lucide-react";
 import { RequireAuth } from "@/components/RequireAuth";
 import { Card } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
 import { errorMessage } from "@/lib/errors";
@@ -95,26 +97,14 @@ function FeatureSelectionForm({ adId, onSubmitted }: { adId: number; onSubmitted
       <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
         Translate to
       </p>
-      <div className="flex flex-wrap gap-2">
-        {LOCALE_OPTIONS.map((locale) => {
-          const active = selected.includes(locale.code);
-          return (
-            <button
-              key={locale.code}
-              type="button"
-              disabled={submitting}
-              onClick={() => toggle(locale.code)}
-              className={`rounded-md border px-3 py-1.5 text-sm transition-colors disabled:cursor-not-allowed ${
-                active
-                  ? "border-neutral-900 bg-neutral-900 text-white dark:border-white dark:bg-white dark:text-neutral-900"
-                  : "border-neutral-300 text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
-              }`}
-            >
-              {locale.label}
-            </button>
-          );
-        })}
-      </div>
+      <SegmentedControl
+        aria-label="Translate to"
+        multiple
+        disabled={submitting}
+        value={selected}
+        onChange={toggle}
+        options={LOCALE_OPTIONS.map((locale) => ({ value: locale.code, label: locale.label }))}
+      />
       {error && <p className="text-sm text-red-600">{error}</p>}
       <div className="flex gap-2">
         <Button onClick={handleSubmit} loading={submitting} className="self-start">
@@ -157,6 +147,7 @@ function AdDetailContent() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [acting, setActing] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const loadValidation = useCallback(() => {
@@ -247,7 +238,7 @@ function AdDetailContent() {
   }
 
   async function handleDelete() {
-    if (!confirm("Delete this ad permanently?")) return;
+    setConfirmDeleteOpen(false);
     setActing(true);
     try {
       await adsApi.deleteAd(adId);
@@ -276,20 +267,12 @@ function AdDetailContent() {
 
   return (
     <div className="flex max-w-2xl flex-col gap-6">
-      <div>
-        {campaignId && (
-          <Link
-            href={`/campaigns/${campaignId}/ads`}
-            className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100"
-          >
-            ← Back to campaign ads
-          </Link>
-        )}
-        <div className="mt-1 flex items-center gap-3">
-          <h1 className="text-xl font-semibold text-neutral-900 dark:text-white">Ad #{validation.adId}</h1>
-          <Badge status={validation.status} />
-        </div>
-      </div>
+      <PageHeader
+        title={`Ad #${validation.adId}`}
+        status={validation.status}
+        backHref={campaignId ? `/campaigns/${campaignId}/ads` : undefined}
+        backLabel="Back to campaign ads"
+      />
 
       <Card>
         <p className="text-sm text-neutral-700 dark:text-neutral-300">
@@ -311,16 +294,19 @@ function AdDetailContent() {
                   showToast("Ad approved", "success");
                 }).catch((err) => showToast(errorMessage(err), "error")).finally(() => setActing(false));
               }}>
+                <Check className="h-3.5 w-3.5" />
                 Approve
               </Button>
             )}
             {CAN_REJECT.has(validation.status) && (
               <Button variant="secondary" loading={acting} onClick={handleReject}>
+                <X className="h-3.5 w-3.5" />
                 Reject
               </Button>
             )}
             {CAN_DELETE.has(validation.status) && (
-              <Button variant="danger" loading={acting} onClick={handleDelete}>
+              <Button variant="danger" loading={acting} onClick={() => setConfirmDeleteOpen(true)}>
+                <Trash2 className="h-3.5 w-3.5" />
                 Delete
               </Button>
             )}
@@ -344,26 +330,29 @@ function AdDetailContent() {
           {embed ? (
             <div className="flex flex-col gap-4">
               <div className="flex items-center gap-2">
-                <code className="flex-1 truncate rounded-md bg-neutral-100 px-3 py-2 text-xs dark:bg-neutral-800">
+                <code className="flex-1 truncate rounded-xl bg-neutral-100 px-3 py-2 text-xs dark:bg-white/5">
                   {embed.embedUrl}
                 </code>
                 <Button variant="secondary" onClick={() => copy(embed.embedUrl, "Embed URL")}>
+                  <Copy className="h-3.5 w-3.5" />
                   Copy
                 </Button>
               </div>
               <div className="flex items-start gap-2">
-                <pre className="flex-1 overflow-x-auto rounded-md bg-neutral-100 px-3 py-2 text-xs dark:bg-neutral-800">
+                <pre className="flex-1 overflow-x-auto rounded-xl bg-neutral-100 px-3 py-2 text-xs dark:bg-white/5">
                   {embed.embedSnippet}
                 </pre>
                 <Button
                   variant="secondary"
                   onClick={() => copy(embed.embedSnippet, "Embed snippet")}
                 >
+                  <Copy className="h-3.5 w-3.5" />
                   Copy
                 </Button>
               </div>
-              <div className="overflow-hidden rounded-md border border-neutral-200 dark:border-neutral-800">
+              <div className="overflow-hidden rounded-xl border border-neutral-200 dark:border-white/10">
                 <iframe
+                  title={`Ad #${validation.adId} embed preview`}
                   src={embed.embedUrl}
                   width="100%"
                   height={360}
@@ -377,6 +366,17 @@ function AdDetailContent() {
           )}
         </Card>
       )}
+
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        title="Delete this ad?"
+        description="This will permanently delete the ad. This action can't be undone."
+        confirmLabel="Delete"
+        danger
+        loading={acting}
+        onConfirm={handleDelete}
+        onCancel={() => setConfirmDeleteOpen(false)}
+      />
     </div>
   );
 }

@@ -25,6 +25,7 @@ function AdLookupContent() {
       <Card>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <Input
+            id="lookup-ad-id"
             label="Ad ID"
             type="number"
             required
@@ -33,6 +34,7 @@ function AdLookupContent() {
             placeholder="123"
           />
           <Input
+            id="lookup-locale"
             label="Locale (optional)"
             value={locale}
             onChange={(e) => setLocale(e.target.value)}

@@ -51,6 +51,7 @@ export default function RegisterPage() {
         <p className="mb-6 text-sm text-neutral-500 dark:text-white/50">Start creating intelligent ads today.</p>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <Input
+            id="register-email"
             label="Email"
             type="email"
             required
@@ -59,6 +60,7 @@ export default function RegisterPage() {
             autoComplete="email"
           />
           <Input
+            id="register-password"
             label="Password"
             type="password"
             required
@@ -68,10 +70,11 @@ export default function RegisterPage() {
             autoComplete="new-password"
           />
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-neutral-600 dark:text-white/70">
+            <label htmlFor="register-role" className="text-sm font-medium text-neutral-600 dark:text-white/70">
               Role
             </label>
             <select
+              id="register-role"
               value={role}
               onChange={(e) => setRole(e.target.value as Role)}
               className="rounded-xl border border-neutral-200 bg-white px-3.5 py-2.5 text-sm text-neutral-900 outline-none focus:border-electric-blue focus:shadow-glow-blue transition-all duration-200 dark:border-white/10 dark:bg-white/5 dark:text-neutral-100"

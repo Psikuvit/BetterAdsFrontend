@@ -47,6 +47,7 @@ export default function LoginPage() {
         <p className="mb-6 text-sm text-neutral-500 dark:text-white/50">Sign in to access your dashboard.</p>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <Input
+            id="login-email"
             label="Email"
             type="email"
             required
@@ -55,6 +56,7 @@ export default function LoginPage() {
             autoComplete="email"
           />
           <Input
+            id="login-password"
             label="Password"
             type="password"
             required

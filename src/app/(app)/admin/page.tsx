@@ -6,6 +6,7 @@ import { RequireAuth } from "@/components/RequireAuth";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { StatCard } from "@/components/ui/StatCard";
 import { StatCardSkeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/EmptyState";
 import { errorMessage } from "@/lib/errors";
@@ -20,20 +21,6 @@ interface AdminStats {
   totalBudget: number;
   totalSpent: number;
   flaggedAds: number;
-}
-
-function StatCard({ label, value, href }: { label: string; value: string; href?: string }) {
-  const inner = (
-    <>
-      <p className="text-sm text-neutral-500 dark:text-neutral-400">{label}</p>
-      <p className="mt-2 font-mono text-2xl text-neutral-900 dark:text-white">{value}</p>
-    </>
-  );
-  return (
-    <Card>
-      {href ? <Link href={href} className="block hover:underline">{inner}</Link> : inner}
-    </Card>
-  );
 }
 
 function AdminDashboardContent() {

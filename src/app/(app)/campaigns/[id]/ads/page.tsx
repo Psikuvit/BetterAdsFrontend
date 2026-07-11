@@ -7,6 +7,8 @@ import { RequireAuth } from "@/components/RequireAuth";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Table, THead, TBody, Tr, Th, Td } from "@/components/ui/Table";
 import { TableSkeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/EmptyState";
 import { errorMessage } from "@/lib/errors";
@@ -54,20 +56,16 @@ function CampaignAdsContent() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <Link
-            href={`/campaigns/${campaignId}`}
-            className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100"
-          >
-            ← Back to campaign
+      <PageHeader
+        title="Ads"
+        backHref={`/campaigns/${campaignId}`}
+        backLabel="Back to campaign"
+        actions={
+          <Link href={`/campaigns/${campaignId}/upload`}>
+            <Button>Upload ad</Button>
           </Link>
-          <h1 className="mt-1 text-2xl font-medium text-neutral-900 dark:text-white">Ads</h1>
-        </div>
-        <Link href={`/campaigns/${campaignId}/upload`}>
-          <Button>Upload ad</Button>
-        </Link>
-      </div>
+        }
+      />
 
       {loading ? (
         <TableSkeleton rows={5} />
@@ -84,50 +82,43 @@ function CampaignAdsContent() {
         </Card>
       ) : (
         <Card className="p-0">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-neutral-200 text-left text-neutral-500 dark:border-neutral-800">
-                <th className="px-4 py-3 font-medium">Title</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Locale</th>
-                <th className="px-4 py-3 font-medium">Views</th>
-                <th className="px-4 py-3 font-medium">Created</th>
-                <th className="px-4 py-3 font-medium">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <THead>
+              <Th>Title</Th>
+              <Th>Status</Th>
+              <Th>Locale</Th>
+              <Th>Views</Th>
+              <Th>Created</Th>
+              <Th>Actions</Th>
+            </THead>
+            <TBody>
               {ads.map((ad) => (
-                <tr
-                  key={ad.id}
-                  className="border-b border-neutral-100 transition-colors last:border-0 hover:bg-neutral-50 dark:border-white/5 dark:hover:bg-white/[0.04]"
-                >
-                  <td className="px-4 py-3">
+                <Tr key={ad.id}>
+                  <Td>
                     <Link
                       href={`/ads/${ad.id}?campaignId=${campaignId}`}
                       className="font-medium text-neutral-900 hover:underline dark:text-white"
                     >
                       {ad.title}
                     </Link>
-                  </td>
-                  <td className="px-4 py-3">
+                  </Td>
+                  <Td>
                     <Badge status={ad.status} />
-                  </td>
-                  <td className="px-4 py-3 text-neutral-500">{ad.targetLocale}</td>
-                  <td className="px-4 py-3 text-neutral-700 dark:text-neutral-100">{(viewsByAdId[ad.id] ?? 0).toLocaleString()}</td>
-                  <td className="px-4 py-3 text-neutral-500">
-                    {new Date(ad.createdAt).toLocaleDateString()}
-                  </td>
-                  <td className="px-4 py-3">
+                  </Td>
+                  <Td className="text-neutral-500">{ad.targetLocale}</Td>
+                  <Td className="text-neutral-700 dark:text-neutral-100">{(viewsByAdId[ad.id] ?? 0).toLocaleString()}</Td>
+                  <Td className="text-neutral-500">{new Date(ad.createdAt).toLocaleDateString()}</Td>
+                  <Td>
                     <Link href={`/ads/${ad.id}?campaignId=${campaignId}`}>
                       <Button variant="secondary" className="px-2.5 py-1 text-xs">
                         View
                       </Button>
                     </Link>
-                  </td>
-                </tr>
+                  </Td>
+                </Tr>
               ))}
-            </tbody>
-          </table>
+            </TBody>
+          </Table>
         </Card>
       )}
 

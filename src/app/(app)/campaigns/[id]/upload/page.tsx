@@ -1,12 +1,13 @@
 "use client";
 
 import { SubmitEvent, useState } from "react";
-import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { UploadCloud } from "lucide-react";
 import { RequireAuth } from "@/components/RequireAuth";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { useAuth } from "@/context/AuthContext";
 import { errorMessage } from "@/lib/errors";
 import * as uploadApi from "@/lib/api/upload";
@@ -90,19 +91,12 @@ function UploadContent() {
 
   return (
     <div className="flex max-w-lg flex-col gap-6">
-      <div>
-        <Link
-          href={`/campaigns/${campaignId}`}
-          className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100"
-        >
-          ← Back to campaign
-        </Link>
-        <h1 className="mt-1 text-2xl font-medium text-neutral-900 dark:text-white">Upload ad</h1>
-      </div>
+      <PageHeader title="Upload ad" backHref={`/campaigns/${campaignId}`} backLabel="Back to campaign" />
 
       <Card>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <Input
+            id="upload-title"
             label="Title"
             required
             value={title}
@@ -110,6 +104,7 @@ function UploadContent() {
             disabled={busy}
           />
           <Input
+            id="upload-locale"
             label="Target locale"
             value={locale}
             onChange={(e) => setLocale(e.target.value)}
@@ -117,10 +112,11 @@ function UploadContent() {
             disabled={busy}
           />
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-neutral-600 dark:text-white/70">
+            <label htmlFor="upload-file" className="text-sm font-medium text-neutral-600 dark:text-white/70">
               Video file
             </label>
             <input
+              id="upload-file"
               type="file"
               accept="video/mp4,video/webm,video/quicktime,video/x-msvideo"
               disabled={busy}
@@ -138,6 +134,7 @@ function UploadContent() {
           {error && <p className="text-sm text-red-600">{error}</p>}
 
           <Button type="submit" loading={busy} className="self-start">
+            <UploadCloud className="h-3.5 w-3.5" />
             Upload
           </Button>
         </form>

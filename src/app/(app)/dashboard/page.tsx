@@ -2,24 +2,17 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Plus } from "lucide-react";
 import { RequireAuth } from "@/components/RequireAuth";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { StatCard } from "@/components/ui/StatCard";
 import { StatCardSkeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/EmptyState";
 import { errorMessage } from "@/lib/errors";
 import * as analyticsApi from "@/lib/api/analytics";
 import { AdvertiserAnalytics } from "@/lib/types";
-
-function StatCard({ label, value }: { label: string; value: string }) {
-  return (
-    <Card>
-      <p className="text-sm text-neutral-500 dark:text-neutral-400">{label}</p>
-      <p className="mt-2 font-mono text-2xl text-neutral-900 dark:text-white">{value}</p>
-    </Card>
-  );
-}
 
 function DashboardContent() {
   const [data, setData] = useState<AdvertiserAnalytics | null>(null);
@@ -88,7 +81,10 @@ function DashboardContent() {
             View campaigns →
           </Link>
           <Link href="/campaigns?new=1">
-            <Button>New campaign</Button>
+            <Button>
+              <Plus className="h-3.5 w-3.5" />
+              New campaign
+            </Button>
           </Link>
         </div>
       </div>
