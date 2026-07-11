@@ -12,6 +12,12 @@ export function reviewAd(id: number, decision: "approve" | "reject") {
   });
 }
 
+export function deleteAd(id: number) {
+  return apiRequest<{ adId: number; deleted: boolean }>(`/api/ads/${id}`, {
+    method: "DELETE",
+  });
+}
+
 export function getEmbedLink(id: number) {
   return apiRequest<EmbedLink>(`/api/ads/${id}/link`);
 }

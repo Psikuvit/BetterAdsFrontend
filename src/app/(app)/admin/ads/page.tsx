@@ -6,19 +6,26 @@ import { RequireAuth } from "@/components/RequireAuth";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { useToast } from "@/context/ToastContext";
 import { errorMessage } from "@/lib/errors";
 import * as campaignsApi from "@/lib/api/campaigns";
+import * as adsApi from "@/lib/api/ads";
 import { Ad, Campaign } from "@/lib/types";
 
 interface AdWithCampaign extends Ad {
   campaignName: string;
 }
 
+const CAN_REJECT = new Set(["PENDING", "VALIDATING", "AWAITING_FEATURES", "FLAGGED", "PROCESSING"]);
+const CAN_DELETE = new Set(["PENDING", "VALIDATING", "AWAITING_FEATURES", "FLAGGED", "REJECTED", "FAILED"]);
+
 function AdminAllAdsContent() {
+  const { showToast } = useToast();
   const [ads, setAds] = useState<AdWithCampaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [filter, setFilter] = useState<string>("ALL");
+  const [actingId, setActingId] = useState<number | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -58,6 +65,33 @@ function AdminAllAdsContent() {
   useEffect(() => {
     load();
   }, [load]);
+
+  async function handleReject(adId: number) {
+    setActingId(adId);
+    try {
+      await adsApi.reviewAd(adId, "reject");
+      setAds((prev) => prev.map((a) => (a.id === adId ? { ...a, status: "REJECTED" as const } : a)));
+      showToast("Ad rejected", "success");
+    } catch (err) {
+      showToast(errorMessage(err), "error");
+    } finally {
+      setActingId(null);
+    }
+  }
+
+  async function handleDelete(adId: number) {
+    if (!confirm("Delete this ad permanently?")) return;
+    setActingId(adId);
+    try {
+      await adsApi.deleteAd(adId);
+      setAds((prev) => prev.filter((a) => a.id !== adId));
+      showToast("Ad deleted", "success");
+    } catch (err) {
+      showToast(errorMessage(err), "error");
+    } finally {
+      setActingId(null);
+    }
+  }
 
   const filtered = filter === "ALL" ? ads : ads.filter((a) => a.status === filter);
   const statuses = ["ALL", "LIVE", "FLAGGED", "PENDING", "VALIDATING", "PROCESSING", "REJECTED", "FAILED"];
@@ -125,7 +159,7 @@ function AdminAllAdsContent() {
                   <td className="px-4 py-3">
                     <Badge status={ad.status} />
                   </td>
-                  <td className="px-4 py-3 text-neutral-500">{ad.targetLocale || "—"}</td>
+                  <td className="px-4 py-3 text-neutral-500">{ad.targetLocale || "\u2014"}</td>
                   <td className="px-4 py-3 text-neutral-500">
                     {new Date(ad.createdAt).toLocaleDateString()}
                   </td>
@@ -136,12 +170,25 @@ function AdminAllAdsContent() {
                           View
                         </Button>
                       </Link>
-                      {ad.status === "FLAGGED" && (
-                        <Link href="/review-queue">
-                          <Button variant="secondary" className="px-2.5 py-1 text-xs">
-                            Review
-                          </Button>
-                        </Link>
+                      {CAN_REJECT.has(ad.status) && ad.status !== "REJECTED" && (
+                        <Button
+                          variant="secondary"
+                          className="px-2.5 py-1 text-xs"
+                          loading={actingId === ad.id}
+                          onClick={() => handleReject(ad.id)}
+                        >
+                          Reject
+                        </Button>
+                      )}
+                      {CAN_DELETE.has(ad.status) && (
+                        <Button
+                          variant="danger"
+                          className="px-2.5 py-1 text-xs"
+                          loading={actingId === ad.id}
+                          onClick={() => handleDelete(ad.id)}
+                        >
+                          Delete
+                        </Button>
                       )}
                     </div>
                   </td>
