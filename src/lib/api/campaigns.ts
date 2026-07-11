@@ -4,6 +4,7 @@ import {
   AdAnalyticsRow,
   Campaign,
   CampaignAnalytics,
+  CampaignEmbed,
   CampaignStatus,
   CampaignTimeseriesPoint,
   FundResponse,
@@ -58,4 +59,8 @@ export function fundCampaign(id: number, amount: number) {
     method: "POST",
     body: { amount },
   });
+}
+
+export function getCampaignEmbed(id: number) {
+  return apiRequest<CampaignEmbed>(`/api/campaigns/${id}/embed`);
 }

@@ -2,8 +2,6 @@
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { RATE_LIMITED_EVENT } from "@/lib/http";
-import { cn } from "@/lib/utils";
-import { X } from "lucide-react";
 
 type ToastType = "info" | "error" | "success";
 
@@ -23,17 +21,13 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const idRef = useRef(0);
 
-  const removeToast = useCallback((id: number) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
-  }, []);
-
   const showToast = useCallback((message: string, type: ToastType = "info") => {
     const id = ++idRef.current;
     setToasts((prev) => [...prev, { id, message, type }]);
     setTimeout(() => {
-      removeToast(id);
+      setToasts((prev) => prev.filter((t) => t.id !== id));
     }, 4000);
-  }, [removeToast]);
+  }, []);
 
   useEffect(() => {
     function handleRateLimit() {
@@ -50,21 +44,15 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         {toasts.map((t) => (
           <div
             key={t.id}
-            className={cn(
-              "flex items-center gap-3 min-w-[280px] max-w-sm rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground shadow-lg backdrop-blur-lg",
-              "animate-in slide-in-from-right-2 fade-in duration-300",
-              t.type === "error" && "border-l-destructive border-l-2",
-              t.type === "success" && "border-l-success border-l-2",
-              t.type === "info" && "border-l-primary border-l-2"
-            )}
+            className={`glass min-w-[240px] rounded-xl border-l-4 px-4 py-3 text-sm shadow-lg animate-slide-in-right ${
+              t.type === "error"
+                ? "border-l-error text-error dark:shadow-[0_0_20px_rgba(239,68,68,0.15)]"
+                : t.type === "success"
+                ? "border-l-success text-success dark:shadow-[0_0_20px_rgba(16,185,129,0.15)]"
+                : "border-l-electric-blue text-electric-blue shadow-glow-blue"
+            }`}
           >
-            <span className="flex-1">{t.message}</span>
-            <button
-              onClick={() => removeToast(t.id)}
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <X className="size-4" />
-            </button>
+            {t.message}
           </div>
         ))}
       </div>

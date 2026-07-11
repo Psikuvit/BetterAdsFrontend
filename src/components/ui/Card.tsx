@@ -1,35 +1,17 @@
-import { cn } from "@/lib/utils";
-
-interface CardProps {
+export function Card({
+  children,
+  className = "",
+}: {
   children: React.ReactNode;
   className?: string;
-}
-
-export function Card({ children, className = "" }: CardProps) {
+}) {
+  // Only apply the default padding when the caller doesn't set its own p-* class
+  const padding = /(^|\s)p-\d/.test(className) ? "" : "p-5";
   return (
     <div
-      className={cn(
-        "rounded-xl border border-border bg-card p-6",
-        className
-      )}
+      className={`glass rounded-2xl ${padding} transition-all duration-300 ease-smooth hover:shadow-lg hover:shadow-black/5 dark:hover:shadow-white/5 animate-fade-up ${className}`}
     >
       {children}
     </div>
-  );
-}
-
-export function CardHeader({ children, className = "" }: CardProps) {
-  return (
-    <div className={cn("flex items-center justify-between mb-4", className)}>
-      {children}
-    </div>
-  );
-}
-
-export function CardTitle({ children, className = "" }: CardProps) {
-  return (
-    <h3 className={cn("text-sm font-medium text-foreground", className)}>
-      {children}
-    </h3>
   );
 }

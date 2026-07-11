@@ -1,17 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { SubmitEvent, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { motion } from "framer-motion";
 import { RequireAuth } from "@/components/RequireAuth";
-import { GlassCard } from "@/components/ui/GlassCard";
+import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { useAuth } from "@/context/AuthContext";
 import { errorMessage } from "@/lib/errors";
 import * as uploadApi from "@/lib/api/upload";
-import { ArrowLeft, Upload as UploadIcon, FileVideo, CheckCircle2 } from "lucide-react";
 
 type Step = "idle" | "presigning" | "uploading" | "confirming" | "done";
 
@@ -43,7 +41,7 @@ function UploadContent() {
     return null;
   }
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
 
@@ -90,37 +88,19 @@ function UploadContent() {
 
   const busy = step !== "idle" && step !== "done";
 
-  if (step === "done") {
-    return (
-      <div className="max-w-lg mx-auto">
-        <GlassCard glow="cyan" className="text-center py-12">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-success/10">
-            <CheckCircle2 className="size-8 text-success" />
-          </div>
-          <h2 className="text-lg font-semibold">Upload complete!</h2>
-          <p className="mt-2 text-sm text-muted-foreground">Redirecting to your ad...</p>
-        </GlassCard>
-      </div>
-    );
-  }
-
   return (
-    <div className="max-w-lg mx-auto flex flex-col gap-6">
+    <div className="flex max-w-lg flex-col gap-6">
       <div>
         <Link
           href={`/campaigns/${campaignId}`}
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100"
         >
-          <ArrowLeft className="size-4" />
-          Back to campaign
+          ← Back to campaign
         </Link>
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight">Upload ad</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Upload a video ad for this campaign
-        </p>
+        <h1 className="mt-1 text-2xl font-medium text-neutral-900 dark:text-white">Upload ad</h1>
       </div>
 
-      <GlassCard>
+      <Card>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <Input
             label="Title"
@@ -128,7 +108,6 @@ function UploadContent() {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             disabled={busy}
-            placeholder="My awesome ad"
           />
           <Input
             label="Target locale"
@@ -138,43 +117,31 @@ function UploadContent() {
             disabled={busy}
           />
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-foreground">
+            <label className="text-sm font-medium text-neutral-600 dark:text-white/70">
               Video file
             </label>
-            <div className="relative">
-              <input
-                type="file"
-                accept="video/mp4,video/webm,video/quicktime,video/x-msvideo"
-                disabled={busy}
-                onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-                className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed"
-              />
-              <div className="flex items-center gap-3 rounded-md border border-input bg-card px-3 py-2.5 text-sm text-muted-foreground">
-                <FileVideo className="size-5 text-primary flex-shrink-0" />
-                {file ? (
-                  <span className="text-foreground truncate">{file.name}</span>
-                ) : (
-                  <span>Choose a video file or tap to browse</span>
-                )}
-              </div>
-            </div>
-            <p className="text-xs text-muted-foreground">MP4, WebM, MOV, or AVI — up to 200MB.</p>
+            <input
+              type="file"
+              accept="video/mp4,video/webm,video/quicktime,video/x-msvideo"
+              disabled={busy}
+              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+              className="cursor-pointer text-sm text-neutral-500 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-electric-blue file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-white file:transition-colors hover:file:bg-vibrant-purple disabled:opacity-50 dark:text-white/40"
+            />
+            <p className="text-xs text-neutral-400">MP4, WebM, MOV, or AVI — up to 200MB.</p>
           </div>
 
           {busy && (
-            <div className="flex items-center gap-2 rounded-lg bg-primary/5 border border-primary/10 px-4 py-3 text-sm text-primary">
-              <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            <p className="text-sm text-neutral-500">
               {STEP_LABELS[step as Exclude<Step, "idle" | "done">]}...
-            </div>
+            </p>
           )}
-          {error && <p className="text-xs text-destructive">{error}</p>}
+          {error && <p className="text-sm text-red-600">{error}</p>}
 
           <Button type="submit" loading={busy} className="self-start">
-            <UploadIcon className="size-4" />
             Upload
           </Button>
         </form>
-      </GlassCard>
+      </Card>
     </div>
   );
 }

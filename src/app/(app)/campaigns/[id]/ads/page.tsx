@@ -3,27 +3,95 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { motion } from "framer-motion";
 import { RequireAuth } from "@/components/RequireAuth";
-import { GlassCard } from "@/components/ui/GlassCard";
+import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { Spinner } from "@/components/ui/Spinner";
+import { useToast } from "@/context/ToastContext";
+import { TableSkeleton } from "@/components/ui/Skeleton";
+import { EmptyState } from "@/components/EmptyState";
 import { errorMessage } from "@/lib/errors";
 import * as campaignsApi from "@/lib/api/campaigns";
-import { Ad, AdAnalyticsRow } from "@/lib/types";
-import {
-  ArrowLeft,
-  Upload,
-  Eye,
-  ChevronLeft,
-  ChevronRight,
-  Film,
-} from "lucide-react";
+import * as adsApi from "@/lib/api/ads";
+import { Ad, AdAnalyticsRow, AdStatus } from "@/lib/types";
+
+const LOCALE_OPTIONS = [{ code: "fr", label: "French" }];
+
+function FeaturePicker({ adId, onDone }: { adId: number; onDone: () => void }) {
+  const [selected, setSelected] = useState<string[]>(["fr"]);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const { showToast } = useToast();
+
+  function toggle(code: string) {
+    setSelected((prev) =>
+      prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code]
+    );
+  }
+
+  async function handleGenerate() {
+    if (selected.length === 0) { setError("Choose at least one locale."); return; }
+    setError("");
+    setSubmitting(true);
+    try {
+      await adsApi.selectFeatures(adId, selected);
+      showToast("Processing started", "success");
+      onDone();
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleSkip() {
+    setSubmitting(true);
+    try {
+      await adsApi.selectFeatures(adId, []);
+      showToast("Ad is now live", "success");
+      onDone();
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      {LOCALE_OPTIONS.map((locale) => {
+        const active = selected.includes(locale.code);
+        return (
+          <button
+            key={locale.code}
+            type="button"
+            disabled={submitting}
+            onClick={() => toggle(locale.code)}
+            className={`rounded-md border px-2 py-0.5 text-xs transition-colors disabled:cursor-not-allowed ${
+              active
+                ? "border-neutral-900 bg-neutral-900 text-white dark:border-white dark:bg-white dark:text-neutral-900"
+                : "border-neutral-300 text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
+            }`}
+          >
+            {locale.label}
+          </button>
+        );
+      })}
+      <Button onClick={handleGenerate} loading={submitting} className="px-2 py-0.5 text-xs">
+        Generate
+      </Button>
+      <Button variant="secondary" loading={submitting} onClick={handleSkip} className="px-2 py-0.5 text-xs">
+        Skip
+      </Button>
+      {error && <p className="w-full text-xs text-red-600">{error}</p>}
+    </div>
+  );
+}
 
 function CampaignAdsContent() {
   const params = useParams<{ id: string }>();
   const campaignId = Number(params.id);
+  const { showToast } = useToast();
 
   const [ads, setAds] = useState<Ad[]>([]);
   const [viewsByAdId, setViewsByAdId] = useState<Record<number, number>>({});
@@ -31,6 +99,7 @@ function CampaignAdsContent() {
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const load = useCallback(
     (pageToLoad: number) => {
@@ -60,150 +129,117 @@ function CampaignAdsContent() {
     load(0);
   }, [load]);
 
+  async function handleDelete(adId: number) {
+    if (!confirm("Delete this ad permanently?")) return;
+    setDeletingId(adId);
+    try {
+      await adsApi.deleteAd(adId);
+      setAds((prev) => prev.filter((a) => a.id !== adId));
+      showToast("Ad deleted", "success");
+    } catch (err) {
+      showToast(errorMessage(err), "error");
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div>
           <Link
             href={`/campaigns/${campaignId}`}
-            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100"
           >
-            <ArrowLeft className="size-4" />
-            Back to campaign
+            ← Back to campaign
           </Link>
-          <h1 className="mt-1 text-2xl font-semibold tracking-tight">Ads</h1>
+          <h1 className="mt-1 text-2xl font-medium text-neutral-900 dark:text-white">Ads</h1>
         </div>
         <Link href={`/campaigns/${campaignId}/upload`}>
-          <Button size="sm">
-            <Upload className="size-4" />
-            Upload ad
-          </Button>
+          <Button>Upload ad</Button>
         </Link>
       </div>
 
       {loading ? (
-        <div className="flex min-h-[30vh] items-center justify-center gap-2 text-sm text-muted-foreground">
-          <Spinner />
-          Loading ads...
-        </div>
+        <TableSkeleton rows={5} />
       ) : error ? (
-        <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-4 text-sm text-destructive">
-          {error}
-        </div>
+        <p className="text-sm text-red-600">{error}</p>
       ) : ads.length === 0 ? (
-        <GlassCard className="flex flex-col items-center gap-4 py-12 text-center">
-          <Film className="size-10 text-muted-foreground/40" />
-          <p className="text-sm text-muted-foreground">No ads uploaded to this campaign yet.</p>
-          <Link href={`/campaigns/${campaignId}/upload`}>
-            <Button size="sm">
-              <Upload className="size-4" />
-              Upload your first ad
-            </Button>
-          </Link>
-        </GlassCard>
+        <Card className="p-0">
+          <EmptyState
+            illustration="ads"
+            title="No ads yet"
+            description="Upload your first ad to this campaign."
+            action={{ label: "Upload ad", onClick: () => {} }}
+          />
+        </Card>
       ) : (
-        <>
-          {/* Desktop table */}
-          <div className="hidden sm:block overflow-hidden rounded-xl border border-border bg-card">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border text-left text-muted-foreground">
-                  <th className="px-4 py-3.5 font-medium">Title</th>
-                  <th className="px-4 py-3.5 font-medium">Status</th>
-                  <th className="px-4 py-3.5 font-medium">Locale</th>
-                  <th className="px-4 py-3.5 font-medium">Views</th>
-                  <th className="px-4 py-3.5 font-medium">Created</th>
-                  <th className="px-4 py-3.5 font-medium">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {ads.map((ad, i) => (
-                  <motion.tr
-                    key={ad.id}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.05, duration: 0.3 }}
-                    className="border-b border-border last:border-0 hover:bg-accent/50 transition-colors"
-                  >
-                    <td className="px-4 py-3.5">
-                      <Link
-                        href={`/ads/${ad.id}?campaignId=${campaignId}`}
-                        className="font-medium hover:text-primary transition-colors"
-                      >
-                        {ad.title}
-                      </Link>
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <Badge status={ad.status} />
-                    </td>
-                    <td className="px-4 py-3.5 text-muted-foreground">{ad.targetLocale}</td>
-                    <td className="px-4 py-3.5 tabular-nums">{(viewsByAdId[ad.id] ?? 0).toLocaleString()}</td>
-                    <td className="px-4 py-3.5 text-muted-foreground">
-                      {new Date(ad.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <Link href={`/ads/${ad.id}?campaignId=${campaignId}`}>
-                        <Button variant="secondary" size="sm">
-                          <Eye className="size-3.5" />
-                          View
-                        </Button>
-                      </Link>
-                    </td>
-                  </motion.tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Mobile cards */}
-          <div className="sm:hidden flex flex-col gap-3">
-            {ads.map((ad, i) => (
-              <motion.div
-                key={ad.id}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05, duration: 0.3 }}
-                className="rounded-xl border border-border bg-card p-4"
-              >
-                <div className="flex items-start justify-between mb-2">
-                  <Link
-                    href={`/ads/${ad.id}?campaignId=${campaignId}`}
-                    className="font-medium hover:text-primary transition-colors"
-                  >
+        <Card className="p-0">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-neutral-200 text-left text-neutral-500 dark:border-neutral-800">
+                <th className="px-4 py-3 font-medium">Title</th>
+                <th className="px-4 py-3 font-medium">Status</th>
+                <th className="px-4 py-3 font-medium">Locale</th>
+                <th className="px-4 py-3 font-medium">Views</th>
+                <th className="px-4 py-3 font-medium">Created</th>
+                <th className="px-4 py-3 font-medium">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {ads.map((ad) => (
+                <tr
+                  key={ad.id}
+                  className="border-b border-neutral-100 transition-colors last:border-0 hover:bg-neutral-50 dark:border-white/5 dark:hover:bg-white/[0.04]"
+                >
+                  <td className="px-4 py-3 font-medium text-neutral-900 dark:text-white">
                     {ad.title}
-                  </Link>
-                  <Badge status={ad.status} />
-                </div>
-                <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                  <span>{ad.targetLocale}</span>
-                  <span className="tabular-nums">{(viewsByAdId[ad.id] ?? 0).toLocaleString()} views</span>
-                </div>
-                <div className="mt-3">
-                  <Link href={`/ads/${ad.id}?campaignId=${campaignId}`}>
-                    <Button variant="secondary" size="sm" className="w-full">
-                      <Eye className="size-3.5" />
-                      View
-                    </Button>
-                  </Link>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </>
+                  </td>
+                  <td className="px-4 py-3">
+                    <Badge status={ad.status} />
+                  </td>
+                  <td className="px-4 py-3 text-neutral-500">{ad.targetLocale}</td>
+                  <td className="px-4 py-3 text-neutral-700 dark:text-neutral-100">{(viewsByAdId[ad.id] ?? 0).toLocaleString()}</td>
+                  <td className="px-4 py-3 text-neutral-500">
+                    {new Date(ad.createdAt).toLocaleDateString()}
+                  </td>
+                  <td className="px-4 py-3">
+                    {ad.status === "AWAITING_FEATURES" ? (
+                      <FeaturePicker adId={ad.id} onDone={() => load(page)} />
+                    ) : (
+                      <div className="flex gap-1.5">
+                        <Button
+                          variant="danger"
+                          className="px-2.5 py-1 text-xs"
+                          loading={deletingId === ad.id}
+                          onClick={() => handleDelete(ad.id)}
+                        >
+                          Delete
+                        </Button>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Card>
       )}
 
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-3">
-          <Button variant="secondary" size="sm" disabled={page === 0} onClick={() => load(page - 1)}>
-            <ChevronLeft className="size-4" />
+          <Button variant="secondary" disabled={page === 0} onClick={() => load(page - 1)}>
             Previous
           </Button>
-          <span className="text-sm text-muted-foreground tabular-nums">
+          <span className="text-sm text-neutral-500">
             Page {page + 1} of {totalPages}
           </span>
-          <Button variant="secondary" size="sm" disabled={page >= totalPages - 1} onClick={() => load(page + 1)}>
+          <Button
+            variant="secondary"
+            disabled={page >= totalPages - 1}
+            onClick={() => load(page + 1)}
+          >
             Next
-            <ChevronRight className="size-4" />
           </Button>
         </div>
       )}

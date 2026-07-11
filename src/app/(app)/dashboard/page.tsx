@@ -2,37 +2,22 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { RequireAuth } from "@/components/RequireAuth";
-import { GlassCard } from "@/components/ui/GlassCard";
+import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { Spinner } from "@/components/ui/Spinner";
+import { StatCardSkeleton } from "@/components/ui/Skeleton";
+import { EmptyState } from "@/components/EmptyState";
 import { errorMessage } from "@/lib/errors";
 import * as analyticsApi from "@/lib/api/analytics";
 import { AdvertiserAnalytics } from "@/lib/types";
-import {
-  TrendingUp,
-  DollarSign,
-  Target,
-  Eye,
-  Plus,
-  ArrowRight,
-} from "lucide-react";
 
-function StatCard({ label, value, icon, delay }: { label: string; value: string; icon: React.ReactNode; delay: number }) {
+function StatCard({ label, value }: { label: string; value: string }) {
   return (
-    <GlassCard delay={delay} glow="none">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-sm text-muted-foreground">{label}</p>
-          <p className="mt-2 text-2xl font-semibold tabular-nums">{value}</p>
-        </div>
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-          {icon}
-        </div>
-      </div>
-    </GlassCard>
+    <Card>
+      <p className="text-sm text-neutral-500 dark:text-neutral-400">{label}</p>
+      <p className="mt-2 font-mono text-2xl text-neutral-900 dark:text-white">{value}</p>
+    </Card>
   );
 }
 
@@ -61,21 +46,29 @@ function DashboardContent() {
 
   if (loading) {
     return (
-      <div className="flex min-h-[50vh] items-center justify-center gap-2 text-sm text-muted-foreground">
-        <Spinner />
-        Loading dashboard...
+      <div className="flex flex-col gap-6">
+        <div className="flex items-center justify-between">
+          <div className="h-8 w-40 animate-skeleton rounded-lg" />
+          <div className="h-10 w-32 animate-skeleton rounded-xl" />
+        </div>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <StatCardSkeleton key={i} />
+          ))}
+        </div>
+        <div className="glass rounded-2xl p-5">
+          <div className="h-4 w-32 animate-skeleton rounded mb-3" />
+          <div className="flex gap-2">
+            <div className="h-6 w-16 animate-skeleton rounded-full" />
+            <div className="h-6 w-16 animate-skeleton rounded-full" />
+          </div>
+        </div>
       </div>
     );
   }
 
   if (error) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-4 text-sm text-destructive">
-          {error}
-        </div>
-      </div>
-    );
+    return <p className="text-sm text-red-600">{error}</p>;
   }
 
   if (!data) return null;
@@ -86,82 +79,48 @@ function DashboardContent() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Overview of your advertising performance
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
+        <h1 className="text-2xl font-medium text-neutral-900 dark:text-white">Dashboard</h1>
+        <div className="flex items-center gap-4">
           <Link
             href="/campaigns"
-            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="text-sm text-electric-blue transition-colors hover:text-neon-cyan"
           >
-            View campaigns
-            <ArrowRight className="size-4" />
+            View campaigns →
           </Link>
           <Link href="/campaigns?new=1">
-            <Button size="sm">
-              <Plus className="size-4" />
-              New campaign
-            </Button>
+            <Button>New campaign</Button>
           </Link>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <StatCard
-          label="Campaigns"
-          value={String(data.campaignCount)}
-          icon={<Target className="size-5 text-primary" />}
-          delay={0}
-        />
-        <StatCard
-          label="Total spent"
-          value={currency(data.totalSpent)}
-          icon={<DollarSign className="size-5 text-primary" />}
-          delay={0.1}
-        />
-        <StatCard
-          label="Total budget"
-          value={currency(data.totalBudget)}
-          icon={<TrendingUp className="size-5 text-primary" />}
-          delay={0.2}
-        />
-        <StatCard
-          label="Total views"
-          value={data.totalViews.toLocaleString()}
-          icon={<Eye className="size-5 text-primary" />}
-          delay={0.3}
-        />
+      <div className="stagger grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <StatCard label="Campaigns" value={String(data.campaignCount)} />
+        <StatCard label="Total spent" value={currency(data.totalSpent)} />
+        <StatCard label="Total budget" value={currency(data.totalBudget)} />
+        <StatCard label="Total views" value={data.totalViews.toLocaleString()} />
       </div>
 
-      <GlassCard delay={0.4}>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-medium text-foreground">Campaigns by status</h3>
-        </div>
+      <Card>
+        <p className="mb-3 text-sm font-medium text-neutral-700 dark:text-neutral-300">
+          Campaigns by status
+        </p>
         {Object.keys(data.campaignsByStatus).length === 0 ? (
-          <div className="flex flex-col items-center gap-3 py-8 text-center">
-            <Target className="size-8 text-muted-foreground/40" />
-            <p className="text-sm text-muted-foreground">No campaigns yet.</p>
-            <Link href="/campaigns?new=1">
-              <Button size="sm">
-                <Plus className="size-4" />
-                Create your first campaign
-              </Button>
-            </Link>
-          </div>
+          <EmptyState
+            illustration="campaigns"
+            title="No campaigns yet"
+            description="Create your first campaign to start advertising."
+          />
         ) : (
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-2">
             {Object.entries(data.campaignsByStatus).map(([status, count]) => (
-              <div key={status} className="flex items-center gap-2 rounded-lg border border-border bg-muted/50 px-3 py-2">
+              <div key={status} className="flex items-center gap-2">
                 <Badge status={status} />
-                <span className="text-sm tabular-nums text-muted-foreground">{count}</span>
+                <span className="text-sm text-neutral-500 dark:text-neutral-400">{count}</span>
               </div>
             ))}
           </div>
         )}
-      </GlassCard>
+      </Card>
     </div>
   );
 }

@@ -62,6 +62,14 @@ export interface EmbedLink {
   token: string;
 }
 
+export interface CampaignEmbed {
+  available: boolean;
+  adId?: number;
+  embedUrl?: string;
+  embedSnippet?: string;
+  token?: string;
+}
+
 export interface CampaignAnalytics {
   campaignId: number;
   totalViews: number;

@@ -1,48 +1,30 @@
 import { ButtonHTMLAttributes, forwardRef } from "react";
-import { cn } from "@/lib/utils";
 
-type Variant = "primary" | "secondary" | "danger" | "ghost" | "outline";
-type Size = "sm" | "md" | "lg" | "icon";
+type Variant = "primary" | "secondary" | "danger" | "ghost";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;
-  size?: Size;
   loading?: boolean;
 }
 
 const variantClasses: Record<Variant, string> = {
   primary:
-    "bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs",
+    "bg-gradient-brand text-white shadow-glow-blue hover:shadow-glow-purple hover:brightness-110 disabled:opacity-50",
   secondary:
-    "bg-secondary text-secondary-foreground hover:bg-accent border border-border",
-  danger: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-  ghost: "bg-transparent text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-  outline: "bg-transparent text-foreground border border-input hover:bg-accent",
-};
-
-const sizeClasses: Record<Size, string> = {
-  sm: "h-8 px-3 text-xs",
-  md: "h-9 px-4 py-2 text-sm",
-  lg: "h-10 px-6 text-sm",
-  icon: "size-9",
+    "bg-neutral-100 text-neutral-700 border border-neutral-200 hover:bg-neutral-200 hover:border-neutral-300 dark:bg-white/5 dark:text-neutral-100 dark:border-white/10 dark:hover:bg-white/10 dark:hover:border-white/20 disabled:opacity-50",
+  danger: "bg-error/90 text-white hover:bg-error hover:brightness-110 shadow-[0_0_20px_rgba(239,68,68,0.25)] disabled:opacity-50",
+  ghost: "bg-transparent text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-neutral-100 dark:hover:bg-white/5",
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  { variant = "primary", size = "md", loading, disabled, className = "", children, ...props },
+  { variant = "primary", loading, disabled, className = "", children, ...props },
   ref
 ) {
   return (
     <button
       ref={ref}
       disabled={disabled || loading}
-      className={cn(
-        "inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-40",
-        "active:scale-[0.97]",
-        variantClasses[variant],
-        sizeClasses[size],
-        loading && "cursor-progress",
-        className
-      )}
+      className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-all duration-200 ease-smooth hover:scale-[1.02] active:scale-95 disabled:cursor-not-allowed disabled:hover:scale-100 ${variantClasses[variant]} ${className}`}
       {...props}
     >
       {loading && (
