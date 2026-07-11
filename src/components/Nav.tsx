@@ -11,6 +11,8 @@ const LINKS_BY_ROLE: Record<string, { href: string; label: string }[]> = {
     { href: "/campaigns", label: "Campaigns" },
   ],
   ADMIN: [
+    { href: "/admin", label: "Dashboard" },
+    { href: "/admin/ads", label: "All Ads" },
     { href: "/campaigns", label: "Campaigns" },
     { href: "/review-queue", label: "Review Queue" },
   ],

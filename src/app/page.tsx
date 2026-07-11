@@ -15,7 +15,7 @@ export default function Home() {
       return;
     }
     if (role === "ADMIN") {
-      router.replace("/campaigns");
+      router.replace("/admin");
     } else if (role === "PUBLISHER") {
       router.replace("/ads/lookup");
     } else {
