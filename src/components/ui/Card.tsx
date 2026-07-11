@@ -5,9 +5,11 @@ export function Card({
   children: React.ReactNode;
   className?: string;
 }) {
+  // Only apply the default padding when the caller doesn't set its own p-* class
+  const padding = /(^|\s)p-\d/.test(className) ? "" : "p-5";
   return (
     <div
-      className={`rounded-lg border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900 ${className}`}
+      className={`glass rounded-2xl ${padding} transition-all duration-300 ease-smooth hover:glass-hover animate-fade-up ${className}`}
     >
       {children}
     </div>

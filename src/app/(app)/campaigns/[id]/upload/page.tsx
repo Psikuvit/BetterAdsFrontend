@@ -97,7 +97,7 @@ function UploadContent() {
         >
           ← Back to campaign
         </Link>
-        <h1 className="mt-1 text-xl font-semibold">Upload ad</h1>
+        <h1 className="mt-1 text-2xl font-medium text-white">Upload ad</h1>
       </div>
 
       <Card>
@@ -117,7 +117,7 @@ function UploadContent() {
             disabled={busy}
           />
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+            <label className="text-sm font-medium text-white/70">
               Video file
             </label>
             <input
@@ -125,7 +125,7 @@ function UploadContent() {
               accept="video/mp4,video/webm,video/quicktime,video/x-msvideo"
               disabled={busy}
               onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-              className="text-sm text-neutral-600 file:mr-3 file:rounded-md file:border-0 file:bg-neutral-900 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-white hover:file:bg-neutral-700 dark:text-neutral-400 dark:file:bg-white dark:file:text-neutral-900"
+              className="cursor-pointer text-sm text-white/40 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-electric-blue file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-white file:transition-colors hover:file:bg-vibrant-purple disabled:opacity-50"
             />
             <p className="text-xs text-neutral-400">MP4, WebM, MOV, or AVI — up to 200MB.</p>
           </div>

@@ -60,7 +60,7 @@ function CampaignAdsContent() {
           >
             ← Back to campaign
           </Link>
-          <h1 className="mt-1 text-xl font-semibold">Ads</h1>
+          <h1 className="mt-1 text-2xl font-medium text-white">Ads</h1>
         </div>
         <Link href={`/campaigns/${campaignId}/upload`}>
           <Button>Upload ad</Button>
@@ -92,7 +92,7 @@ function CampaignAdsContent() {
               {ads.map((ad) => (
                 <tr
                   key={ad.id}
-                  className="border-b border-neutral-100 last:border-0 hover:bg-neutral-50 dark:border-neutral-900 dark:hover:bg-neutral-900/50"
+                  className="border-b border-white/5 transition-colors last:border-0 hover:bg-white/[0.04]"
                 >
                   <td className="px-4 py-3">
                     <Link

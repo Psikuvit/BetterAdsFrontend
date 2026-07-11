@@ -6,9 +6,10 @@ import { SubmitEvent, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Card } from "@/components/ui/Card";
 import { errorMessage } from "@/lib/errors";
 import { Role } from "@/lib/types";
+import GradientBackground from "@/components/effects/GradientBackground";
+import CrystalLogo from "@/components/ui-custom/CrystalLogo";
 
 const ROLES: Role[] = ["ADVERTISER", "PUBLISHER", "ADMIN"];
 
@@ -36,10 +37,18 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4">
-      <Card className="w-full max-w-sm">
-        <h1 className="mb-1 text-xl font-semibold">Create account</h1>
-        <p className="mb-6 text-sm text-neutral-500">Get started with BetterAds.</p>
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-4">
+      <GradientBackground />
+      <div className="relative z-10 w-full max-w-sm">
+        <div className="mb-8 flex flex-col items-center animate-fade-up">
+          <CrystalLogo size={72} />
+          <h1 className="mt-4 text-3xl font-medium text-white">
+            Better<span className="text-gradient">Ads</span>
+          </h1>
+        </div>
+        <div className="glass rounded-3xl p-8 animate-fade-up" style={{ animationDelay: "0.1s" }}>
+        <h2 className="mb-1 text-2xl font-medium text-white">Create Account</h2>
+        <p className="mb-6 text-sm text-white/50">Start creating intelligent ads today.</p>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <Input
             label="Email"
@@ -59,13 +68,13 @@ export default function RegisterPage() {
             autoComplete="new-password"
           />
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+            <label className="text-sm font-medium text-white/70">
               Role
             </label>
             <select
               value={role}
               onChange={(e) => setRole(e.target.value as Role)}
-              className="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-none focus:border-neutral-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+              className="rounded-xl border border-white/10 bg-white/5 px-3.5 py-2.5 text-sm text-neutral-100 outline-none focus:border-electric-blue focus:shadow-glow-blue transition-all duration-200"
             >
               {ROLES.map((r) => (
                 <option key={r} value={r}>
@@ -74,18 +83,19 @@ export default function RegisterPage() {
               ))}
             </select>
           </div>
-          {error && <p className="text-sm text-red-600">{error}</p>}
-          <Button type="submit" loading={loading} className="w-full">
+          {error && <p className="text-sm text-error">{error}</p>}
+          <Button type="submit" loading={loading} className="w-full py-2.5">
             Create account
           </Button>
         </form>
-        <div className="mt-4 text-sm text-neutral-500">
+        <div className="mt-5 text-center text-sm text-white/50">
           Already have an account?{" "}
-          <Link href="/login" className="text-neutral-900 hover:underline dark:text-neutral-100">
+          <Link href="/login" className="font-medium text-electric-blue transition-colors hover:text-neon-cyan">
             Sign in
           </Link>
         </div>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

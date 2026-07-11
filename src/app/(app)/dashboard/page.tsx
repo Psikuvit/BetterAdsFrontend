@@ -14,7 +14,7 @@ function StatCard({ label, value }: { label: string; value: string }) {
   return (
     <Card>
       <p className="text-sm text-neutral-500">{label}</p>
-      <p className="mt-2 text-2xl font-semibold">{value}</p>
+      <p className="mt-2 font-mono text-2xl text-white">{value}</p>
     </Card>
   );
 }
@@ -58,11 +58,11 @@ function DashboardContent() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Dashboard</h1>
+        <h1 className="text-2xl font-medium text-white">Dashboard</h1>
         <div className="flex items-center gap-4">
           <Link
             href="/campaigns"
-            className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100"
+            className="text-sm text-electric-blue transition-colors hover:text-neon-cyan"
           >
             View campaigns →
           </Link>
@@ -72,7 +72,7 @@ function DashboardContent() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className="stagger grid grid-cols-2 gap-4 sm:grid-cols-4">
         <StatCard label="Campaigns" value={String(data.campaignCount)} />
         <StatCard label="Total spent" value={currency(data.totalSpent)} />
         <StatCard label="Total budget" value={currency(data.totalBudget)} />

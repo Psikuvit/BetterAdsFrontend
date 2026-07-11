@@ -71,7 +71,7 @@ function CampaignsContent() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Campaigns</h1>
+        <h1 className="text-2xl font-medium text-white">Campaigns</h1>
         {canCreate && (
           <Button onClick={() => setShowForm((s) => !s)} variant={showForm ? "secondary" : "primary"}>
             {showForm ? "Cancel" : "New campaign"}
@@ -138,7 +138,7 @@ function CampaignsContent() {
               {campaigns.map((c) => (
                 <tr
                   key={c.id}
-                  className="border-b border-neutral-100 last:border-0 hover:bg-neutral-50 dark:border-neutral-900 dark:hover:bg-neutral-900/50"
+                  className="border-b border-white/5 transition-colors last:border-0 hover:bg-white/[0.04]"
                 >
                   <td className="px-4 py-3">
                     <Link href={`/campaigns/${c.id}`} className="font-medium hover:underline">

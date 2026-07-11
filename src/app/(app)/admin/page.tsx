@@ -24,7 +24,7 @@ function StatCard({ label, value, href }: { label: string; value: string; href?:
   const inner = (
     <>
       <p className="text-sm text-neutral-500">{label}</p>
-      <p className="mt-2 text-2xl font-semibold">{value}</p>
+      <p className="mt-2 font-mono text-2xl text-white">{value}</p>
     </>
   );
   return (
@@ -109,7 +109,7 @@ function AdminDashboardContent() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Admin Dashboard</h1>
+        <h1 className="text-2xl font-medium text-white">Admin Dashboard</h1>
         <div className="flex items-center gap-3">
           <Link href="/admin/ads">
             <Button variant="secondary">All ads</Button>
@@ -120,7 +120,7 @@ function AdminDashboardContent() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className="stagger grid grid-cols-2 gap-4 sm:grid-cols-4">
         <StatCard label="Campaigns" value={String(stats.totalCampaigns)} href="/campaigns" />
         <StatCard label="Total ads" value={String(stats.totalAds)} href="/admin/ads" />
         <StatCard label="Total budget" value={currency(stats.totalBudget)} />
@@ -129,8 +129,8 @@ function AdminDashboardContent() {
 
       {stats.flaggedAds > 0 && (
         <Link href="/review-queue">
-          <Card className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30">
-            <p className="text-sm font-medium text-amber-700 dark:text-amber-400">
+          <Card className="border-pending/30 bg-pending/10 shadow-[0_0_20px_rgba(245,158,11,0.1)]">
+            <p className="text-sm font-medium text-pending">
               {stats.flaggedAds} ad{stats.flaggedAds !== 1 ? "s" : ""} flagged for review
             </p>
           </Card>

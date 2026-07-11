@@ -68,7 +68,7 @@ function AdminAllAdsContent() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">All Ads</h1>
+        <h1 className="text-2xl font-medium text-white">All Ads</h1>
         <Link href="/admin">
           <Button variant="secondary">Back to dashboard</Button>
         </Link>
@@ -79,10 +79,10 @@ function AdminAllAdsContent() {
           <button
             key={s}
             onClick={() => setFilter(s)}
-            className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+            className={`rounded-full px-3 py-1 text-xs font-medium transition-all duration-200 ${
               filter === s
-                ? "bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900"
-                : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700"
+                ? "bg-gradient-brand text-white shadow-glow-blue"
+                : "border border-white/10 bg-white/5 text-white/50 hover:bg-white/10 hover:text-white/70"
             }`}
           >
             {s === "ALL" ? `All (${ads.length})` : `${s} (${ads.filter((a) => a.status === s).length})`}
@@ -111,13 +111,13 @@ function AdminAllAdsContent() {
               {filtered.map((ad) => (
                 <tr
                   key={ad.id}
-                  className="border-b border-neutral-100 last:border-0 hover:bg-neutral-50 dark:border-neutral-900 dark:hover:bg-neutral-900/50"
+                  className="border-b border-white/5 transition-colors last:border-0 hover:bg-white/[0.04]"
                 >
                   <td className="px-4 py-3 font-medium">{ad.title || "Untitled"}</td>
                   <td className="px-4 py-3">
                     <Link
                       href={`/campaigns/${ad.campaignId}`}
-                      className="text-neutral-500 hover:underline hover:text-neutral-900 dark:hover:text-neutral-100"
+                      className="text-neutral-500 transition-colors hover:text-electric-blue hover:underline"
                     >
                       {ad.campaignName}
                     </Link>

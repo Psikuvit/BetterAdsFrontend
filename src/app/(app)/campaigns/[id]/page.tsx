@@ -123,7 +123,7 @@ function CampaignDetailContent() {
             ← Back to campaigns
           </Link>
           <div className="mt-1 flex items-center gap-3">
-            <h1 className="text-xl font-semibold">{campaign.name || "Untitled campaign"}</h1>
+            <h1 className="text-2xl font-medium text-white">{campaign.name || "Untitled campaign"}</h1>
             <Badge status={campaign.status} />
           </div>
         </div>
@@ -132,7 +132,7 @@ function CampaignDetailContent() {
             value={campaign.status}
             disabled={statusSaving}
             onChange={(e) => handleStatusChange(e.target.value as CampaignStatus)}
-            className="rounded-md border border-neutral-300 bg-white px-3 py-1.5 text-sm capitalize outline-none focus:border-neutral-500 dark:border-neutral-700 dark:bg-neutral-900"
+            className="rounded-xl border border-white/10 bg-white/5 px-3 py-1.5 text-sm capitalize text-neutral-100 outline-none transition-colors focus:border-electric-blue disabled:opacity-50"
           >
             {STATUS_OPTIONS.map((s) => (
               <option key={s} value={s}>
@@ -203,22 +203,22 @@ function CampaignDetailContent() {
       </div>
 
       {analytics && (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div className="stagger grid grid-cols-2 gap-4 sm:grid-cols-4">
           <Card>
             <p className="text-sm text-neutral-500">Total views</p>
-            <p className="mt-2 text-2xl font-semibold">{analytics.totalViews.toLocaleString()}</p>
+            <p className="mt-2 font-mono text-2xl text-white">{analytics.totalViews.toLocaleString()}</p>
           </Card>
           <Card>
             <p className="text-sm text-neutral-500">Total ads</p>
-            <p className="mt-2 text-2xl font-semibold">{analytics.totalAds}</p>
+            <p className="mt-2 font-mono text-2xl text-white">{analytics.totalAds}</p>
           </Card>
           <Card>
             <p className="text-sm text-neutral-500">Spent</p>
-            <p className="mt-2 text-2xl font-semibold">${analytics.spent.toFixed(2)}</p>
+            <p className="mt-2 font-mono text-2xl text-white">${analytics.spent.toFixed(2)}</p>
           </Card>
           <Card>
             <p className="text-sm text-neutral-500">Budget</p>
-            <p className="mt-2 text-2xl font-semibold">${analytics.budget.toFixed(2)}</p>
+            <p className="mt-2 font-mono text-2xl text-white">${analytics.budget.toFixed(2)}</p>
           </Card>
         </div>
       )}
@@ -233,10 +233,10 @@ function CampaignDetailContent() {
               <button
                 key={d}
                 onClick={() => setDays(d)}
-                className={`rounded-md px-2.5 py-1 text-xs ${
+                className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-all duration-200 ${
                   days === d
-                    ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900"
-                    : "text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                    ? "bg-gradient-brand text-white shadow-glow-blue"
+                    : "text-white/50 hover:bg-white/5 hover:text-white/70"
                 }`}
               >
                 {d}d
@@ -256,11 +256,21 @@ function CampaignDetailContent() {
                 <Tooltip
                   contentStyle={{
                     fontSize: 12,
-                    borderRadius: 6,
-                    border: "1px solid var(--color-border, #e5e5e5)",
+                    borderRadius: 12,
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    background: "rgba(19,19,24,0.95)",
+                    color: "#ededed",
                   }}
+                  labelStyle={{ color: "rgba(255,255,255,0.5)" }}
                 />
-                <Line type="monotone" dataKey="views" stroke="#171717" strokeWidth={2} dot={false} />
+                <Line
+                  type="monotone"
+                  dataKey="views"
+                  stroke="#4F46E5"
+                  strokeWidth={2}
+                  dot={false}
+                  activeDot={{ r: 4, fill: "#06B6D4", stroke: "none" }}
+                />
               </LineChart>
             </ResponsiveContainer>
           </div>
