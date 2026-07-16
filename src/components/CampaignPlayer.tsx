@@ -1,58 +1,65 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Button } from "@/components/ui/Button";
+import { AdPlayer } from "@betterads/react";
+import type { EventType } from "@betterads/sdk-core";
 import { useToast } from "@/context/ToastContext";
 import { errorMessage } from "@/lib/errors";
-import * as campaignsApi from "@/lib/api/campaigns";
-import * as adsApi from "@/lib/api/ads";
-import { Ad } from "@/lib/types";
+import * as placementsApi from "@/lib/api/placements";
+import { API_BASE_URL } from "@/lib/config";
 
-interface EmbedEntry {
-  ad: Ad;
-  embedUrl: string;
+// Dogfoods the placements API from inside the dashboard as its own "preview
+// site" (registered via /sites with no origin/bundle-ID restriction) rather
+// than a real publisher embed -- see .env.example for how to set this up.
+const PREVIEW_SITE_KEY = process.env.NEXT_PUBLIC_PREVIEW_SITE_KEY || "";
+
+const VIEWER_ID_STORAGE_KEY = "betterads.previewViewerId";
+
+function getOrCreateViewerId(): string {
+  let id = window.localStorage.getItem(VIEWER_ID_STORAGE_KEY);
+  if (!id) {
+    id = crypto.randomUUID();
+    window.localStorage.setItem(VIEWER_ID_STORAGE_KEY, id);
+  }
+  return id;
 }
 
+/**
+ * Replaces the old client-side "fetch every live ad, cycle every 30s"
+ * iframe rotation with server-driven ad selection (Phase 6): each ad is
+ * chosen by POST /api/v1/placements/{siteKey}/select (frequency-cap aware),
+ * then rendered via @betterads/react's <AdPlayer/> (Phase 1's session +
+ * event API, no iframe). When the SDK reports the ad finished or errored,
+ * this asks the server to select the next one.
+ *
+ * Trade-off worth knowing: this is no longer a client-controlled playlist,
+ * so the old manual Prev/Next buttons are gone -- the server decides what
+ * plays next, same as a real publisher embed would experience. That's the
+ * point of Phase 6 (frequency capping/pacing need server control), but it
+ * does mean this is now a faithful *preview* of the viewer experience
+ * rather than an advertiser-controlled rotation browser.
+ */
 export function CampaignPlayer({ campaignId }: { campaignId: number }) {
   const { showToast } = useToast();
-  const [playlist, setPlaylist] = useState<EmbedEntry[]>([]);
-  const [index, setIndex] = useState(0);
+  const [adId, setAdId] = useState<number | null>(null);
+  const [round, setRound] = useState(0); // bumped to force <AdPlayer/> to remount for the next ad
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-  const advanceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const viewerIdRef = useRef<string>("");
 
-  const loadPlaylist = useCallback(async () => {
+  const loadNext = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
-      let page = 0;
-      const allAds: Ad[] = [];
-      while (true) {
-        const res = await campaignsApi.getCampaignAds(campaignId, { page, size: 50 });
-        allAds.push(...res.content);
-        if (res.last) break;
-        page++;
+      if (!viewerIdRef.current) {
+        viewerIdRef.current = getOrCreateViewerId();
       }
-
-      const liveAds = allAds.filter((a) => a.status === "LIVE");
-      if (liveAds.length === 0) {
-        setPlaylist([]);
-        return;
-      }
-
-      const entries = await Promise.all(
-        liveAds.map(async (ad) => {
-          try {
-            const link = await adsApi.getEmbedLink(ad.id);
-            return { ad, embedUrl: link.embedUrl } as EmbedEntry;
-          } catch {
-            return null;
-          }
-        })
-      );
-
-      setPlaylist(entries.filter((e): e is EmbedEntry => e !== null));
+      const res = await placementsApi.selectAd(PREVIEW_SITE_KEY, {
+        campaignId,
+        viewerId: viewerIdRef.current,
+      });
+      setAdId(res.adId);
+      setRound((r) => r + 1);
     } catch (err) {
       setError(errorMessage(err));
     } finally {
@@ -61,55 +68,36 @@ export function CampaignPlayer({ campaignId }: { campaignId: number }) {
   }, [campaignId]);
 
   useEffect(() => {
-    loadPlaylist();
-  }, [loadPlaylist]);
+    if (!PREVIEW_SITE_KEY) return;
+    loadNext();
+  }, [loadNext]);
 
-  const advance = useCallback(() => {
-    if (playlist.length <= 1) return;
-    setIndex((i) => (i + 1) % playlist.length);
-  }, [playlist.length]);
-
-  useEffect(() => {
-    if (playlist.length === 0) return;
-
-    function onMsg(ev: MessageEvent) {
-      if (ev.data?.type === "ad-ended" || ev.data?.type === "ended" || ev.data?.type === "complete") {
-        if (advanceTimerRef.current) {
-          clearTimeout(advanceTimerRef.current);
-          advanceTimerRef.current = null;
-        }
-        advance();
-      }
+  function handleEvent(type: EventType) {
+    if (type === "COMPLETE" || type === "ERROR") {
+      loadNext();
     }
+  }
 
-    window.addEventListener("message", onMsg);
-    return () => window.removeEventListener("message", onMsg);
-  }, [playlist, advance]);
+  function handlePlayerError(err: unknown) {
+    showToast(errorMessage(err), "error");
+  }
 
-  useEffect(() => {
-    if (advanceTimerRef.current) {
-      clearTimeout(advanceTimerRef.current);
-      advanceTimerRef.current = null;
-    }
-
-    if (playlist.length > 1) {
-      advanceTimerRef.current = setTimeout(() => {
-        advance();
-      }, 30000);
-    }
-
-    return () => {
-      if (advanceTimerRef.current) {
-        clearTimeout(advanceTimerRef.current);
-        advanceTimerRef.current = null;
-      }
-    };
-  }, [index, playlist, advance]);
-
-  if (loading) {
+  if (!PREVIEW_SITE_KEY) {
     return (
       <p className="text-sm text-neutral-500 dark:text-neutral-400">
-        Loading playlist...
+        Set <code>NEXT_PUBLIC_PREVIEW_SITE_KEY</code> (register a site under{" "}
+        <a href="/sites" className="underline">
+          /sites
+        </a>
+        ) to preview live ad playback here.
+      </p>
+    );
+  }
+
+  if (loading && adId === null) {
+    return (
+      <p className="text-sm text-neutral-500 dark:text-neutral-400">
+        Loading ad...
       </p>
     );
   }
@@ -118,7 +106,7 @@ export function CampaignPlayer({ campaignId }: { campaignId: number }) {
     return <p className="text-sm text-red-600">{error}</p>;
   }
 
-  if (playlist.length === 0) {
+  if (adId === null) {
     return (
       <p className="text-sm text-neutral-500 dark:text-neutral-400">
         No live ads to play.
@@ -126,56 +114,18 @@ export function CampaignPlayer({ campaignId }: { campaignId: number }) {
     );
   }
 
-  const current = playlist[index];
-
   return (
     <div className="flex flex-col gap-3">
       <div className="overflow-hidden rounded-md border border-neutral-200 dark:border-neutral-800">
-        <iframe
-          ref={iframeRef}
-          key={`${current.ad.id}-${index}`}
-          src={current.embedUrl}
-          width="100%"
-          height={360}
-          frameBorder={0}
-          allow="autoplay; fullscreen"
-          onLoad={(e) => {
-            const iframe = e.currentTarget;
-            function onResize(ev: MessageEvent) {
-              if (ev.data?.type === "ad-resize" && ev.data.width && ev.data.height) {
-                const ratio = ev.data.height / ev.data.width;
-                iframe.style.height = `${iframe.clientWidth * ratio}px`;
-              }
-            }
-            window.addEventListener("message", onResize);
-            iframe.addEventListener("remove", () => window.removeEventListener("message", onResize));
-          }}
+        <AdPlayer
+          key={round}
+          baseUrl={API_BASE_URL}
+          siteKey={PREVIEW_SITE_KEY}
+          adId={adId}
+          style={{ width: "100%", aspectRatio: "16 / 9" }}
+          onEvent={handleEvent}
+          onError={handlePlayerError}
         />
-      </div>
-
-      <div className="flex items-center justify-between gap-3">
-        <p className="truncate text-sm text-neutral-500 dark:text-neutral-400">
-          {current.ad.title || `Ad #${current.ad.id}`}
-          <span className="ml-2 text-neutral-400 dark:text-neutral-600">
-            {index + 1}/{playlist.length}
-          </span>
-        </p>
-        <div className="flex shrink-0 gap-2">
-          <Button
-            variant="secondary"
-            className="px-2.5 py-1 text-xs"
-            onClick={() => setIndex((i) => (i - 1 + playlist.length) % playlist.length)}
-          >
-            Prev
-          </Button>
-          <Button
-            variant="secondary"
-            className="px-2.5 py-1 text-xs"
-            onClick={() => setIndex((i) => (i + 1) % playlist.length)}
-          >
-            Next
-          </Button>
-        </div>
       </div>
     </div>
   );
