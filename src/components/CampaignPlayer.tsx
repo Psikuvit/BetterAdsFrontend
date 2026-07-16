@@ -26,18 +26,18 @@ function getOrCreateViewerId(): string {
 
 /**
  * Replaces the old client-side "fetch every live ad, cycle every 30s"
- * iframe rotation with server-driven ad selection (Phase 6): each ad is
- * chosen by POST /api/v1/placements/{siteKey}/select (frequency-cap aware),
- * then rendered via @betterads/react's <AdPlayer/> (Phase 1's session +
- * event API, no iframe). When the SDK reports the ad finished or errored,
- * this asks the server to select the next one.
+ * iframe rotation with server-driven ad selection: each ad is chosen by
+ * POST /api/v1/placements/{siteKey}/select (frequency-cap aware), then
+ * rendered via @betterads/react's <AdPlayer/> (session + event API, no
+ * iframe). When the SDK reports the ad finished or errored, this asks
+ * the server to select the next one.
  *
  * Trade-off worth knowing: this is no longer a client-controlled playlist,
  * so the old manual Prev/Next buttons are gone -- the server decides what
- * plays next, same as a real publisher embed would experience. That's the
- * point of Phase 6 (frequency capping/pacing need server control), but it
- * does mean this is now a faithful *preview* of the viewer experience
- * rather than an advertiser-controlled rotation browser.
+ * plays next, same as a real publisher embed would experience. That's
+ * needed for frequency capping/pacing to work server-side, but it does
+ * mean this is now a faithful *preview* of the viewer experience rather
+ * than an advertiser-controlled rotation browser.
  */
 export function CampaignPlayer({ campaignId }: { campaignId: number }) {
   const { showToast } = useToast();
