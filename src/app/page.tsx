@@ -18,7 +18,7 @@ export default function Home() {
     if (role === "ADMIN") {
       router.replace("/admin");
     } else if (role === "PUBLISHER") {
-      router.replace("/ads/lookup");
+      router.replace("/sites");
     } else {
       router.replace("/dashboard");
     }

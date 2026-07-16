@@ -16,7 +16,7 @@ const LINKS_BY_ROLE: Record<string, { href: string; label: string }[]> = {
     { href: "/campaigns", label: "Campaigns" },
     { href: "/review-queue", label: "Review Queue" },
   ],
-  PUBLISHER: [],
+  PUBLISHER: [{ href: "/sites", label: "Sites" }],
 };
 
 export function Nav() {

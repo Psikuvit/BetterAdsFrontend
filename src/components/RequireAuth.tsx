@@ -9,7 +9,7 @@ import { Role } from "@/lib/types";
 const DEFAULT_ROUTE_BY_ROLE: Record<Role, string> = {
   ADVERTISER: "/dashboard",
   ADMIN: "/admin",
-  PUBLISHER: "/ads/lookup",
+  PUBLISHER: "/sites",
 };
 
 export function RequireAuth({

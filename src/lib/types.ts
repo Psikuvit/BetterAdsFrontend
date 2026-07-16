@@ -110,6 +110,18 @@ export interface Page<T> {
   empty: boolean;
 }
 
+export type SiteStatus = "ACTIVE" | "DISABLED";
+
+export interface Site {
+  id: number;
+  name: string;
+  siteKey: string;
+  allowedOrigin: string | null;
+  bundleId: string | null;
+  status: SiteStatus;
+  createdAt: string;
+}
+
 export interface FundResponse {
   clientSecret: string;
   paymentIntentId: string;
