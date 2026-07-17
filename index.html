@@ -4,13 +4,48 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BetterAds</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 16px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 16px;
+        }
+
+        .embed {
+            position: relative;
+            width: 100%;
+            max-width: 640px;
+            aspect-ratio: 16 / 9;
+        }
+
+        .embed iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+    </style>
 </head>
 <body>
 
-<iframe src="https://betterads.onrender.com/embed/96645d7a-5805-46c5-8d9c-1515d6239a66" width="640" height="360" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
-<iframe src="https://betterads.onrender.com/embed/ddf4d29f-1271-4bea-9967-62e4546ba707" width="640" height="360" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
-<iframe src="https://betterads.onrender.com/embed/4e48923e-16eb-4a88-94e1-837ef6671ccb" width="640" height="360" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
+<div class="embed">
+    <iframe src="https://betterads.onrender.com/embed/96645d7a-5805-46c5-8d9c-1515d6239a66" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
+</div>
+<div class="embed">
+    <iframe src="https://betterads.onrender.com/embed/ddf4d29f-1271-4bea-9967-62e4546ba707" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
+</div>
+<div class="embed">
+    <iframe src="https://betterads.onrender.com/embed/4e48923e-16eb-4a88-94e1-837ef6671ccb" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
+</div>
 
-    
 </body>
 </html>
