@@ -1,4 +1,4 @@
-export type Role = "ADVERTISER" | "ADMIN" | "PUBLISHER";
+export type Role = "ADVERTISER" | "ADMIN";
 
 export interface AuthResponse {
   token: string;

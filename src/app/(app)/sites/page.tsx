@@ -216,7 +216,7 @@ function SitesContent() {
 
 export default function SitesPage() {
   return (
-    <RequireAuth allowedRoles={["PUBLISHER", "ADMIN"]}>
+    <RequireAuth allowedRoles={["ADVERTISER", "ADMIN"]}>
       <Suspense fallback={<TableSkeleton rows={5} />}>
         <SitesContent />
       </Suspense>

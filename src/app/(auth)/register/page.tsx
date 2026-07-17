@@ -11,7 +11,7 @@ import { Role } from "@/lib/types";
 import GradientBackground from "@/components/effects/GradientBackground";
 import CrystalLogo from "@/components/ui-custom/CrystalLogo";
 
-const ROLES: Role[] = ["ADVERTISER", "PUBLISHER", "ADMIN"];
+const ROLES: Role[] = ["ADVERTISER", "ADMIN"];
 
 export default function RegisterPage() {
   const { register } = useAuth();

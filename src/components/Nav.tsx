@@ -9,14 +9,15 @@ const LINKS_BY_ROLE: Record<string, { href: string; label: string }[]> = {
   ADVERTISER: [
     { href: "/dashboard", label: "Dashboard" },
     { href: "/campaigns", label: "Campaigns" },
+    { href: "/sites", label: "Sites" },
   ],
   ADMIN: [
     { href: "/admin", label: "Dashboard" },
     { href: "/admin/ads", label: "All Ads" },
     { href: "/campaigns", label: "Campaigns" },
     { href: "/review-queue", label: "Review Queue" },
+    { href: "/sites", label: "Sites" },
   ],
-  PUBLISHER: [{ href: "/sites", label: "Sites" }],
 };
 
 export function Nav() {
