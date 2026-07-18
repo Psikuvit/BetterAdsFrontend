@@ -62,6 +62,12 @@ export interface EmbedLink {
   token: string;
 }
 
+export interface AdPreview {
+  adId: number;
+  videoUrl: string;
+  locale: string;
+}
+
 export interface CampaignEmbed {
   available: boolean;
   adId?: number;

@@ -1,5 +1,5 @@
 import { apiRequest, buildQuery } from "../http";
-import { AdValidation, EmbedLink } from "../types";
+import { AdPreview, AdValidation, EmbedLink } from "../types";
 
 export function getAdValidation(id: number) {
   return apiRequest<AdValidation>(`/api/ads/${id}/validation`);
@@ -20,6 +20,10 @@ export function deleteAd(id: number) {
 
 export function getEmbedLink(id: number) {
   return apiRequest<EmbedLink>(`/api/ads/${id}/link`);
+}
+
+export function getAdPreview(id: number, locale?: string) {
+  return apiRequest<AdPreview>(`/api/ads/${id}/preview${buildQuery({ locale })}`);
 }
 
 export function selectFeatures(id: number, locales: string[]) {

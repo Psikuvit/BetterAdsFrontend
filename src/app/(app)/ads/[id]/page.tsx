@@ -4,6 +4,7 @@ import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { RequireAuth } from "@/components/RequireAuth";
+import { DummyAdPlayer } from "@/components/DummyAdPlayer";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -329,6 +330,15 @@ function AdDetailContent() {
       {validation.status === "LIVE" && (
         <Card>
           <p className="mb-3 text-sm font-medium text-neutral-700 dark:text-neutral-300">
+            Preview
+          </p>
+          <DummyAdPlayer adId={adId} />
+        </Card>
+      )}
+
+      {validation.status === "LIVE" && (
+        <Card>
+          <p className="mb-3 text-sm font-medium text-neutral-700 dark:text-neutral-300">
             Embed
           </p>
           {embed ? (
@@ -351,15 +361,6 @@ function AdDetailContent() {
                 >
                   Copy
                 </Button>
-              </div>
-              <div className="overflow-hidden rounded-md border border-neutral-200 dark:border-neutral-800">
-                <iframe
-                  src={embed.embedUrl}
-                  width="100%"
-                  height={360}
-                  frameBorder={0}
-                  allow="autoplay; fullscreen"
-                />
               </div>
             </div>
           ) : (
