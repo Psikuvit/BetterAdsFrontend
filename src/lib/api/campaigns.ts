@@ -2,6 +2,7 @@ import { apiRequest, buildQuery } from "../http";
 import {
   Ad,
   AdAnalyticsRow,
+  AdPreview,
   Campaign,
   CampaignAnalytics,
   CampaignEmbed,
@@ -63,4 +64,8 @@ export function fundCampaign(id: number, amount: number) {
 
 export function getCampaignEmbed(id: number) {
   return apiRequest<CampaignEmbed>(`/api/campaigns/${id}/embed`);
+}
+
+export function getCampaignPreview(id: number, locale?: string) {
+  return apiRequest<AdPreview[]>(`/api/campaigns/${id}/preview${buildQuery({ locale })}`);
 }

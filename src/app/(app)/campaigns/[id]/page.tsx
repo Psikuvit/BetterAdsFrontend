@@ -19,7 +19,7 @@ import { Input } from "@/components/ui/Input";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { FundCampaignPanel } from "@/components/FundCampaignPanel";
-import { CampaignPlayer } from "@/components/CampaignPlayer";
+import { DummyPlaylistPlayer } from "@/components/DummyPlaylistPlayer";
 import { useToast } from "@/context/ToastContext";
 import { errorMessage } from "@/lib/errors";
 import * as campaignsApi from "@/lib/api/campaigns";
@@ -237,7 +237,7 @@ function CampaignDetailContent() {
         <p className="mb-3 text-sm font-medium text-neutral-700 dark:text-neutral-300">
           Playlist
         </p>
-        <CampaignPlayer campaignId={campaignId} />
+        <DummyPlaylistPlayer campaignId={campaignId} />
       </Card>
 
       {embed?.available && (

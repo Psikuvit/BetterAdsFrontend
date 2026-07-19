@@ -8,9 +8,11 @@ import * as adsApi from "@/lib/api/ads";
  * Not a real placement: fetches the ad's own video directly via
  * GET /api/ads/{id}/preview (authenticated, ownership-checked, skips
  * billing/fraud/view-token logic -- see AdController#preview), so an
- * advertiser previewing their own ad here never counts as a served
- * impression and never needs a registered site key, unlike the real
- * @betterads/react <AdPlayer/> used in CampaignPlayer.
+ * advertiser previewing this single ad here never counts as a served
+ * impression and never needs a registered site key. For all LIVE ads in a
+ * campaign at once, see DummyPlaylistPlayer -- the actual, tracked,
+ * site-key-based playlist a publisher gets on their own site comes from
+ * GET /embed/{token} instead, not from anything in this dashboard.
  */
 export function DummyAdPlayer({ adId }: { adId: number }) {
   const [videoUrl, setVideoUrl] = useState<string | null>(null);

@@ -9,8 +9,6 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@betterads/sdk-core": "^0.1.0",
-    "@betterads/react": "^0.1.0",
     "@stripe/react-stripe-js": "^6.7.0",
     "@stripe/stripe-js": "^9.9.0",
     "clsx": "^2.1.1",
@@ -31,8 +29,5 @@
     "eslint-config-next": "16.2.10",
     "tailwindcss": "^4",
     "typescript": "^5"
-  },
-  "overrides": {
-    "@betterads/sdk-core": "^0.1.0"
   }
 }
