@@ -6,6 +6,7 @@ import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { ToastProvider } from "@/context/ToastContext";
+import { SITE_URL } from "@/lib/config";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,9 +18,28 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const DESCRIPTION =
+  "BetterAds is a video advertising platform where advertisers upload ads, manage campaigns, and fund budget, and publishers register sites to display ads.";
+
 export const metadata: Metadata = {
-  title: "BetterAds",
-  description: "Video ad platform for advertisers, publishers, and admins.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "BetterAds",
+    template: "%s | BetterAds",
+  },
+  description: DESCRIPTION,
+  openGraph: {
+    title: "BetterAds",
+    description: DESCRIPTION,
+    url: SITE_URL,
+    siteName: "BetterAds",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "BetterAds",
+    description: DESCRIPTION,
+  },
 };
 
 export default function RootLayout({

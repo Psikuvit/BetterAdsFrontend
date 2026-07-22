@@ -1,15 +1,13 @@
-"use client";
+import type { Metadata } from "next";
+import { AppShell } from "@/components/AppShell";
 
-import { RequireAuth } from "@/components/RequireAuth";
-import { Nav } from "@/components/Nav";
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <RequireAuth>
-      <Nav />
-      <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-10 animate-slide-up">
-        {children}
-      </main>
-    </RequireAuth>
-  );
+  return <AppShell>{children}</AppShell>;
 }

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -11,13 +11,19 @@ import GradientBackground from "@/components/effects/GradientBackground";
 import CrystalLogo from "@/components/ui-custom/CrystalLogo";
 
 export default function LoginPage() {
-  const { login } = useAuth();
+  const { login, user, role, loading: authLoading } = useAuth();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.replace(role === "ADMIN" ? "/admin" : "/dashboard");
+    }
+  }, [authLoading, user, role, router]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
